@@ -10,6 +10,7 @@ class Clan{
 	
 	public function __construct($clan_name){
 		if(!self::isClanExist($clan_name)){
+			echo($clan_name);
 			throw new Exception("No such Clan");
 		}else{
 			$this->clan_name = $clan_name;
@@ -30,12 +31,12 @@ class Clan{
 	
 	public function addMember($member){
 		$date = date('Y-m-d H:i:s',time());
-		$username = $member->username;
+		$username = $member->getUserInfo("username");
 		$sql = "update user set clan_name = '$this->clan_name' where username = '$username'";
 		$this->con->query($sql);
 		$sql = "update user_clan set clan_name = '$this->clan_name',clan_job = 3,join_time = '$date' where username = '$username'";
 		$this->con->query($sql);
-		$sql = "update clan set member_num = member + 1 where clan_name = '$this->clan_name'";
+		$sql = "update clan set member_num = member_num + 1 where clan_name = '$this->clan_name'";
 		$this->con->query($sql);
 		$sql = "delete from clan_join_in_request where username = '$username'";
 		$this->con->query($sql);
@@ -58,6 +59,7 @@ class Clan{
 		$con->query($sql);
 		$sql = "update user set clan_name = '$clan_name' where username = '$leader_name'";
 		$con->query($sql);
+		$leader->changeDiamond(-1000);
 		return new Clan($clan_name);
 	}
 	

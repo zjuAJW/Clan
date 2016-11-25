@@ -14,7 +14,7 @@ class Member extends User{
 	}
 	
 	public function getUserClanInfo($info){
-		$sql = "select * form user_clan where username = '$this->username'";
+		$sql = "select * from user_clan where username = '$this->username'";
 		$result = $this->con->query($sql);
 		return $result[0][$info];
 	}

@@ -54,8 +54,14 @@ class User{
 	}
 	
 	public function deleteClanJoinRecord($clan_name){
-		$sql = "delete from clan_join_in_request where username = 'this->username' and clan_name = '$clan_name'";
-		$result = $con->query($sql);
+		$sql = "delete from clan_join_in_request where username = '$this->username' and clan_name = '$clan_name'";
+		$result = $this->con->query($sql);
+		return $result;
+	}
+	
+	public function getClanJoinRecord($clan_name){
+		$sql = "select * from clan_join_in_request where username = '$this->username' and clan_name = '$clan_name'";
+		$result = $this->con->query($sql);
 		return $result;
 	}
 	

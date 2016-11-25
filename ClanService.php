@@ -47,7 +47,7 @@ class ClanService{
 			$user = User::getInstance($parameter['username']);
 			$clan_name = $parameter['clan_name'];
 		}
-		if(!($user instanceof User)){
+		if($user->getUserInfo("clan_name")!=null){
 			throw new Exception("不能同时加入两个工会，请先退出现在的工会");
 		}
 		if(!Clan::isClanExist($clan_name)){
@@ -122,17 +122,24 @@ class ClanService{
 				$member = User::getInstance($parameter['member_name']);
 				$accept = $parameter['accept'];
 		}
-		if(!($user instanceof Leader || $user instanceof Elder)){
+		if($user->getUserInfo('clan_name') == null){
+			throw new Exception("Request denied: user not in any clan");
+		}else{
+			$clan_job = $user->getUserClanInfo('clan_job');
+		}
+		if(!($clan_job == CLAN_LEADER || $clan_job == CLAN_ELDER)){
 			throw new Exception("Request denied: Only leader or elder can accept member");
 		}
 		$clan_name = $user->getUserClanInfo("clan_name");
-		echo($clan_name);
+		if(!($member->getClanJoinRecord($clan_name))){
+			throw new Exception("No such request");
+		}
 		$clan = new Clan($clan_name);
 		if($accept){
 			if($member == null){
 				throw new Exception('No such user');
 			}
-			if(!($member instanceof User)){
+			if($member->getUserInfo("clan_name")){
 				throw new Exception("Request denied: The player has already been in a clan");
 			}
 			if($clan->getClanInfo("member_num")>=MAX_CLAN_MEMBER_NUM){

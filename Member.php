@@ -1,15 +1,15 @@
 <?php
 require_once 'MysqlConnect.php';
+require_once 'User.php';
 class Member extends User{
 	//protected $con = MysqlConnect::getInstance();
 	//构造函数
 	public function __construct($username){
-		$sql = "select * from user where username = '$username'";
-		$result = $this->con->query($sql);
-		if(count($result) == 0){
+		if(!self::isUserExist($username)){
 			throw new Exception("No such user!");
 		}else{
 			$this->username = $username;
+			$this->con = MysqlConnect::getInstance();
 		}
 	}
 	

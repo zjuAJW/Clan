@@ -6,21 +6,10 @@ require_once 'CONSTANT.php';
 require_once 'ParaCheck.php';
 class ClanService{
 	public static function createClan($parameter){
-		if(isset($parameter['username'])){
-			$user = new Member($parameter['username']);
-		}
-		else{
-			throw new Exception("Request Syndax Error:Create clan with no username");
-		}
-		if(isset($parameter['clan_name'])){
+		if(ParaCheck::check($parameter, ["username","clan_name","icon_id"])){
+			$user = new User($parameter['username']);
 			$clan_name = $parameter['clan_name'];
-		}else{
-			throw new Exception("Request Syndax Error:Create clan with no clan name");
-		}
-		if(isset($parameter['icon_id'])){
 			$icon_id = $parameter['icon_id'];
-		}else{
-			throw new Exception("Request Syndax Error:Create clan with no icon id");
 		}
 		if($user->getUserInfo('clan_name')!=null){
 			throw new Exception("Request denied: You have to quit your clan first");
@@ -39,15 +28,13 @@ class ClanService{
 	}
 	
 	public static function quitClan($parameter){
-		if(isset($parameter['username'])){
-			$user = new Member($parameter['username']);
-		}else{
-			throw new Exception("Request Sydax Error: Quit a clan without username");
+		if(ParaCheck::check($parameter, ["username"])){
+			$user = User::getInstance($parameter['username']);
 		}
-		if($user->getUserInfo('clan_name') == null){
+		if($user instanceof User){
 			throw new Exception("User is not in any clan");
 		}
-		if($user->getClanInfo('clan_job') == CLAN_LEADER){
+		if($user instanceof Leader){
 			throw new Exception("Leader of clan cannot quit");
 		}
 		$clan = new Clan($user->getUserInfo('clan_name'));
@@ -110,6 +97,53 @@ class ClanService{
 		}
 		$user->addClanJoinRecord($clan_name);
 		return("Application is successful, awaiting approval.");
+	}
+	
+	public static function searchForClan($parameter){
+		if(ParaCheck::check($parameter, ["username","clan_name"])){
+			$user = User::getInstance($parameter["username"]);
+			$clan = new Clan($parameter["clan_name"]);
+		}
+		if($clan){
+			$result = $clan->getClanInfo('all');
+			$info = "";
+			foreach($result as $k=>$value){
+				$info = $info.$k.":".$value." ";
+			}
+			return $info;
+		}else{
+			throw new Exception("你查找的公会不存在");
+		}
+	}
+	
+	public function acceptMember($parameter){
+		if(ParaCheck::check($parameter, ['username','member_name','accept'])){
+				$user = User::getInstance($parameter['username']);
+				$member = User::getInstance($parameter['member_name']);
+				$accept = $parameter['accept'];
+		}
+		if(!($user instanceof Leader || $user instanceof Elder)){
+			throw new Exception("Request denied: Only leader or elder can accept member");
+		}
+		$clan_name = $user->getUserClanInfo("clan_name");
+		echo($clan_name);
+		$clan = new Clan($clan_name);
+		if($accept){
+			if($member == null){
+				throw new Exception('No such user');
+			}
+			if(!($member instanceof User)){
+				throw new Exception("Request denied: The player has already been in a clan");
+			}
+			if($clan->getClanInfo("member_num")>=MAX_CLAN_MEMBER_NUM){
+				throw new Exception("Request denied: The number of clan member is max");
+			}
+			$clan->addMember($member);
+			return ("Accept successfully!");
+		}else{
+			$member->deleteClanJoinRecord($clan_name);
+			return("Refuse");
+		}
 	}
 }
 ?>

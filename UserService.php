@@ -1,5 +1,6 @@
 <?php
 require_once 'User.php';
+require_once 'paraCheck.php';
 class UserService{
 	public static function register($parameter){
 		if(isset($parameter['username'])){
@@ -23,6 +24,15 @@ class UserService{
 		}else{
 			throw new Exception("Register failed");
 		}
+	}
+	
+	public static function changeLevel($parameter){
+		if(ParaCheck::check($parameter, ['username','diff'])){
+			$user = new User($parameter['username']);
+			$diff = $parameter['diff'];
+		}
+		$user->changeLevel($diff);
+		return "Level changed";
 	}
 }
 ?>

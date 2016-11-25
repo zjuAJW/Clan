@@ -26,6 +26,11 @@ class User{
 		$this->con->query($sql);
 	}
 	
+	public function changeLevel($diff){
+		$sql = "update user set level = level + '$diff' where username = '$this->username'";
+		$this->con->query($sql);
+	}
+	
 	public function getClanQuitRecord(){
 		$sql = "select * from clan_quit_record where username = '$this->username'";
 		$quit_result = $this->con->query($sql);
@@ -46,6 +51,12 @@ class User{
 			$sql = "insert into clan_join_in_request (username,clan_name,request_time) values ('$this->username','$clan_name','$date')";
 			$result = $this->con->query($sql);
 		}
+	}
+	
+	public function deleteClanJoinRecord($clan_name){
+		$sql = "delete from clan_join_in_request where username = 'this->username' and clan_name = '$clan_name'";
+		$result = $con->query($sql);
+		return $result;
 	}
 	
 	public static function isUserExist($username){

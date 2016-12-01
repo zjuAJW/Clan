@@ -35,11 +35,12 @@ class gateWay{
 			$data = JsonHandler::deserializeRequest($this->rawInputdata);
 			$this->rawOutputData = JsonHandler::handleRequest($data);
 			//echo $this->rawOutputData;
-			//$this->rawOutputData = JsonHandler::serializeData($this->rawOutputData);
+			$this->rawOutputData = JsonHandler::serializeData($this->rawOutputData);
 		}catch(Exception $e){
 			$this->rawOutputData = JsonHandler::handleException($e);
 		}
 	}
+	
 	
 	public function output(){
 		//ob_clean();

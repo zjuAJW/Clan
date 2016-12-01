@@ -45,7 +45,7 @@ class Clan{
 	public function deleteMember($member){
 		$username = $member->username;
 		$this->con->query("update user set clan_name = null where username = '$username'");
-		$this->con->query("update user_clan set clan_name = null,clan_job = null,join_time = null,contribution = 0 where username = '$username'");
+		$this->con->query("update user_clan set clan_name = null,clan_job = null,join_time = null,contribution = 0,instance_num = 0 where username = '$username'");
 		$this->con->query("update clan set member_num = member_num - 1 where clan_name = '$clan_name'");
 	}
 	
@@ -103,6 +103,12 @@ class Clan{
 	
 	public function changeLevelRequired($level){
 		$sql = "update clan set level_required = '$level' where clan_name = '$this->clan_name'";
+		$result = $this->con->query($sql);
+		return $result;
+	}
+	
+	public function changeNotice($notice){
+		$sql = "update clan set notice = '$notice' where clan_name = '$this->clan_name'";
 		$result = $this->con->query($sql);
 		return $result;
 	}

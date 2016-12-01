@@ -182,5 +182,46 @@ class ClanService{
 			return "修改成功";
 		}
 	}
+	
+	public static function changeNotice($parameter){
+		if(ParaCheck::check($parameter, ["username","notice"])){
+			$user = User::getInstance($parameter["username"]);
+			$notice = $parameter["notice"];
+		}
+		if(!($user instanceof Leader || $user instanceof Elder)){
+			throw new Exception("Request denied: Only Leader or Elder can modify the motice");
+		}else{
+			$clan_name = $user->getUserClanInfo("clan_name");
+			$clan = new Clan($clan_name);
+			$result = $clan->changeNotice($notice);
+			if($result){
+				return "Notice Changed";
+			}
+		}
+	}
+	
+	public static function checkMemberInfo($parameter){
+		if(ParaCheck::check($parameter, ["username","member_name","info"])){
+			$user = User::getInstance($parameter["username"]);
+			$member = User::getInstance($parameter["member_name"]);
+			$info = $parameter["info"];
+			$result = [];
+		}
+		if(!$user instanceof Leader){
+			throw new Exception("Request denied: Only the leader can check member info");
+		}else{
+			$info_array = explode(',',$info);
+			if(in_array("time_last_log_in", $info_array)){
+				$result["time_last_log_in"] = $member->getUserInfo("time_last_log_in");
+			}
+			if(in_array("contribution",$info_array)){
+				$result["contribution"] = $member->getUserClanInfo("contribution");
+			}
+			if(in_array("instance_num",$info_array)){
+				$result["instance_num"] = $member->getUserClanInfo("instance_num");
+			}
+			return $result;
+		}
+	}
 }
 ?>

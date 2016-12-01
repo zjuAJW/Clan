@@ -116,7 +116,7 @@ class ClanService{
 		}
 	}
 	
-	public function acceptMember($parameter){
+	public static function acceptMember($parameter){
 		if(ParaCheck::check($parameter, ['username','member_name','accept'])){
 				$user = User::getInstance($parameter['username']);
 				$member = User::getInstance($parameter['member_name']);
@@ -150,6 +150,36 @@ class ClanService{
 		}else{
 			$member->deleteClanJoinRecord($clan_name);
 			return("Refuse");
+		}
+	}
+	
+	public static function clanSettings($parameter){
+		if(ParaCheck::check($parameter, ['username','clan_name','icon_id','type','level_required'])){
+			$user = User::getInstance($parameter['username']);
+			$new_name = $parameter['clan_name'];
+			$icon_id = $parameter['icon_id'];
+			$type = $parameter['type'];
+			$level_required = $parameter['level_required'];
+		}
+		if(!$user instanceof Leader){
+			throw new Exception("Request denied: Only the leader can change settings");
+		}else{
+			$clan_name = $user->getUserClanInfo("clan_name");
+			$clan = new Clan($clan_name);
+			if(!empty($clan_name)){
+				$user->changeDiamond(-500);
+				$clan->changeClanName($new_name);
+			}
+			if(!empty($icon_id)){
+				$clan->changeClanIcon($icon_id);
+			}
+			if(!empty($type)){
+				$clan->changeClanType($type);
+			}
+			if(!empty($level_required)){
+				$clan->changeLevelRequired($level_required);
+			}
+			return "修改成功";
 		}
 	}
 }

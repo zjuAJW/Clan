@@ -79,5 +79,32 @@ class Clan{
 		}
 	}
 	
+	public function changeClanName($new_name){
+		$sql = "update clan set clan_name = '$new_name' where clan_name = '$this->clan_name'";
+		$result = $this->con->query($sql);
+		$sql = "update user set clan_name = '$new_name' where clan_name = '$this->clan_name'";
+		$result = $result && $this->con->query($sql);
+		$sql = "update user_clan set clan_name = '$new_name' where clan_name = '$this->clan_name'";
+		$result = $result && $this->con->query($sql);
+		return $result;
+	}
+	
+	public function changeClanIcon($new_icon){
+		$sql = "update clan set icon_id = '$new_icon' where clan_name = '$this->clan_name'";
+		$result = $this->con->query;
+		return $result;
+	}
+	
+	public function changeClanType($new_type){
+		$sql = "update clan set type = '$new_type' where clan_name = '$this->clan_name'";
+		$result = $this->con->query($sql);
+		return $result;
+	}
+	
+	public function changeLevelRequired($level){
+		$sql = "update clan set level_required = '$level' where clan_name = '$this->clan_name'";
+		$result = $this->con->query($sql);
+		return $result;
+	}
 }
 ?>

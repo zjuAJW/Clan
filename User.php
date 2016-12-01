@@ -22,8 +22,13 @@ class User{
 	}
 	
 	public function changeDiamond($num){
-		$sql = "update user set diamond = diamond + '$num' where username = '$this->username'";
-		$this->con->query($sql);
+		$diamond = $this->getUserInfo("diamond");
+		if($diamond + $num < 0){
+			throw new Exception("宝石不足");
+		}else{
+			$sql = "update user set diamond = diamond + '$num' where username = '$this->username'";
+			$this->con->query($sql);
+		}
 	}
 	
 	public function changeLevel($diff){

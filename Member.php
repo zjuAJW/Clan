@@ -31,18 +31,21 @@ class Member extends User{
 	public function admire($type){
 		switch($type){
 			case FREE_ADMIRE:
-				$sql = "update user_clan set admire_num = admire_num + 1, admire_reward_energy = admire_reward_energy + 15 where username = '$this->username'";
+				$sql = "update user_clan set admire_num = admire_num + 1 where username = '$this->username'";
 				$this->con->query($sql);
+				$this->changeEnergy(15);
 				break;
 			case GOLD_ADMIRE:
 				$this->changeGold(-30000);
-				$sql = "update user_clan set admire_num = admire_num + 1, admire_reward_energy = admire_reward_energy + 30 where username = '$this->username'";
+				$sql = "update user_clan set admire_num = admire_num + 1 where username = '$this->username'";
 				$this->con->query($sql);
+				$this->changeEnergy(30);
 				break;
 			case DIAMOND_ADMIRE:
 				$this->changeDiamond(-150);
-				$sql = "update user_clan set admire_num = admire_num + 1, admire_reward_energy = admire_reward_energy + 100 where username = '$this->username'";
+				$sql = "update user_clan set admire_num = admire_num + 1 where username = '$this->username'";
 				$this->con->query($sql);
+				$this->changeEnergy(100);
 				break;
 		}
 	}
@@ -62,6 +65,13 @@ class Member extends User{
 				$this->con->query($sql);
 				break;
 		}
+	}
+	
+	public function getAdmireReward(){
+		$reward = $this->getUserClanInfo("admire_reward_gold");
+		$sql = "update user_clan set admire_reward_gold = 0 where username = '$this->username'";
+		$this->con->query($sql);
+		$this->changeGold($reward);
 	}
 }
 ?>

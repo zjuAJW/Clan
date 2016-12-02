@@ -321,5 +321,18 @@ class ClanService{
 		return "Admire successfully";
 	}
 	
+	public static function getAdmireReward($parameter){
+		if(ParaCheck::check($parameter, ["username"])){
+			$user = User::getInstance($parameter["username"]);
+		}
+		if($user->getUserClanInfo("admire_reward_gold") <= 0){
+			throw new Exception("没有可领取的奖励");
+		}else{
+			$user->getAdmireReward();
+			return "Get reward successfully";		
+		}
+			
+	}
+	
 }
 ?>

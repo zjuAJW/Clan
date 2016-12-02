@@ -46,6 +46,16 @@ class User{
 		$this->con->query($sql);
 	}
 	
+	public function changeEnergy($diff){
+		$energy = $this->getUserInfo("energy");
+		if($energy + $num < 0){
+			throw new Exception("体力不足");
+		}else{
+			$sql = "update user set energy = energy + '$num' where username = '$this->username'";
+			$this->con->query($sql);
+		}
+	}
+	
 	public function getClanQuitRecord(){
 		$sql = "select * from clan_quit_record where username = '$this->username'";
 		$quit_result = $this->con->query($sql);

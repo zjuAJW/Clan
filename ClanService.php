@@ -278,5 +278,20 @@ class ClanService{
 			return "Kick out successfully";
 		}
 	}
+	
+	public static function dissolveClan($parameter){
+		if(ParaCheck::check($parameter, ["username"])){
+			$user = User::getInstance($parameter["username"]);
+		}
+		if(!($user instanceof Leader)){
+			throw new Exception("Request denied: Only Leader can dissolve clan");
+		}else{
+			$clan_name = $user->getUserClanInfo("clan_name");
+			$clan = new Clan($clan_name);
+			$clan->dissolve();
+			return "Clan has been dissoved";
+		}
+		
+	}
 }
 ?>

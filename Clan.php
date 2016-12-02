@@ -64,8 +64,9 @@ class Clan{
 	}
 	
 	public function setJob($member_name,$job){
-		$sql = "update user_clan set clan_job = '$job' where username = 'member_name'";
-		$this->con->query($sql);
+		$sql = "update user_clan set clan_job = $job where username = '$member_name'";
+		$result = $this->con->query($sql);
+		return $result;
 	}
 	
 	public static function isClanExist($clan_name){
@@ -111,6 +112,12 @@ class Clan{
 		$sql = "update clan set notice = '$notice' where clan_name = '$this->clan_name'";
 		$result = $this->con->query($sql);
 		return $result;
+	}
+	
+	public function getElderNum(){
+		$sql = "select * from user_clan where clan_name = '$this->clan_name' and clan_job =".CLAN_ELDER;
+		$result = $this->con->query($sql);
+		return count($result);
 	}
 }
 ?>

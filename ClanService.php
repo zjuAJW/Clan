@@ -223,5 +223,46 @@ class ClanService{
 			return $result;
 		}
 	}
+	
+	public static function setJob($parameter){
+		if(ParaCheck::check($parameter, ["username","member_name","job"])){
+			$user = User::getInstance($parameter["username"]);
+			$member = User::getInstance($parameter["member_name"]);
+			$job = $parameter["job"];
+		}
+		if(!$user instanceof Leader){
+			throw new Exception("Request denied: Only Leader can change the job");
+		}else if($parameter["username"] == $parameter["member_name"]){
+			throw new Exception("You can't change your own job");
+		}else{
+			$clan_name = $user->getUserClanInfo("clan_name");
+			$clan = new Clan($clan_name);
+			if(!($member->getUserInfo("clan_name") == $clan_name)){
+				throw new Exception("Request denied: member not in clan");
+			}else{
+				switch($job){
+					case CLAN_LEADER:
+						$member_job = $member->getUserClanInfo('clan_job');
+						$clan->setJob($parameter['member_name'], CLAN_LEADER);
+						$clan->setJob($parameter['username'],$member_job);
+						return "Set Leader successfully";
+					case CLAN_ELDER:
+						if($clan->getElderNum() >= MAX_CLAN_ELDER_NUM){
+							throw new Exception("Request denied: 长老人数超限");
+						}else{
+							$result = $clan->setJob($parameter['member_name'], CLAN_ELDER);
+							return "Set Elder successfully";
+						}
+					case CLAN_MEMBER:
+						$clan->setJob($parameter['member_name'], CLAN_MEMBER);
+						return "Set Member successfully";
+				}
+			}
+		}
+	}
+	
+	public static function kickOutMember($parameter){
+		
+	}
 }
 ?>

@@ -4,6 +4,6 @@ require 'Clan.php';
 //require 'Member.php';
 
 $clan = new Clan("company");
-echo $clan->getClanInfo("member_num");
+$clan->setJob("xuyiyang",2);
 
 ?>

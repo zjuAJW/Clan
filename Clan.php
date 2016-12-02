@@ -43,10 +43,10 @@ class Clan{
 	}
 	
 	public function deleteMember($member){
-		$username = $member->username;
+		$username = $member->getUserInfo("username");
 		$this->con->query("update user set clan_name = null where username = '$username'");
 		$this->con->query("update user_clan set clan_name = null,clan_job = null,join_time = null,contribution = 0,instance_num = 0 where username = '$username'");
-		$this->con->query("update clan set member_num = member_num - 1 where clan_name = '$clan_name'");
+		$this->con->query("update clan set member_num = member_num - 1 where clan_name = '$this->clan_name'");
 	}
 	
 	public static function createClan($clan_name,$leader,$icon_id){
@@ -64,7 +64,7 @@ class Clan{
 	}
 	
 	public function setJob($member_name,$job){
-		$sql = "update user_clan set clan_job = $job where username = '$member_name'";
+		$sql = "update user_clan set clan_job = '$job' where username = '$member_name'";
 		$result = $this->con->query($sql);
 		return $result;
 	}

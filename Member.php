@@ -20,9 +20,12 @@ class Member extends User{
 	}
 	
 	
-	public function addClanQuitRecord(){
+	public function addClanQuitRecord($kickout){
 		$date = date('Y-m-d H:i:s',time());
-		$this->con->query("insert into clan_quit_record (username,clan_name,quit_time) values ('$username',".$this->getUserInfo('clan_name').",'$date')");
+		$clan_name = $this->getUserClanInfo("clan_name");
+		$sql = "insert into clan_quit_record (username,clan_name,quit_time,kickout) values ('$this->username','$clan_name','$date','$kickout')";
+		$result = $this->con->query($sql);
+		return $result;
 	}
 	
 }

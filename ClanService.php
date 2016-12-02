@@ -38,8 +38,9 @@ class ClanService{
 			throw new Exception("Leader of clan cannot quit");
 		}
 		$clan = new Clan($user->getUserInfo('clan_name'));
+		$user->addClanQuitRecord(0);
 		$clan->deleteMember($user);
-		$user->addClanQuitRecord();
+		
 	}
 	
 	public static function joinClan($parameter){
@@ -64,10 +65,10 @@ class ClanService{
 		$quit_result = $user->getClanQuitRecord();
 		if(count($quit_result)!=0){
 			for($i = 0;$i<count($quit_result);$i++){
+				$quit_time = strtotime($quit_result[$i]['quit_time']);
+				$timeDiff = (time()-$quit_time);
 				//同一公会
 				if($quit_result[$i]['clan_name'] == $clan_name){
-					$quit_time = strtotime($quit_result[$i]['quit_time']);
-					$timeDiff = (time()-$quit_time);
 					if($timeDiff/3600 < 48){
 						$timeRequire = 48*3600-$timeDiff;
 						$d = floor($timeRequire/86400);
@@ -78,9 +79,7 @@ class ClanService{
 					}else{
 						$user->deletClanQuitRecord($clan_name);
 					}
-				}else{
-					$quit_time = strtotime($quit_result[$i]['quit_time']);
-					$timeDiff = (time()-$quit_time);
+				}else if($quit_result[$i]['kickout'] == 0){
 					if($timeDiff/3600 < 1){
 						$timeRequire = 3600-$timeDiff;
 						//$d = floor($timeRequire/86400);
@@ -88,10 +87,10 @@ class ClanService{
 						$m = floor($timeRequire/60);
 						$s = floor($timeRequire%60);
 						throw new Exception("无法在退出公会1小时内加入任何公会，再过".$m ."分钟".$s."秒后才可选择加入公会");
-					}else if($timeDiff/3600 >= 48){
-						$clan_name_i = $quit_result[$i]['clan_name'];
-						$user->deleteClanQuitRecord($clan_name_i);
 					}
+				}else if($timeDiff/3600 >= 48){
+					$clan_name_i = $quit_result[$i]['clan_name'];
+					$user->deleteClanQuitRecord($clan_name_i);
 				}
 			}
 		}
@@ -262,7 +261,22 @@ class ClanService{
 	}
 	
 	public static function kickOutMember($parameter){
-		
+		if(ParaCheck::check($parameter, ["username","member_name"])){
+			$user = User::getInstance($parameter["username"]);
+			$member = User::getInstance($parameter["member_name"]);
+		}
+		if(!($user instanceof Leader)){
+			throw new Exception("Request denied: Only Leader can kick out member");
+		}
+		$clan_name = $user->getUserClanInfo("clan_name");
+		$clan = new Clan($clan_name);
+		if(!($member->getUserInfo("clan_name") == $clan_name)){
+			throw new Exception("Request denied: member not in clan");
+		}else{
+			$member->addClanQuitRecord(1);
+			$clan->deleteMember($member);
+			return "Kick out successfully";
+		}
 	}
 }
 ?>

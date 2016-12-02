@@ -291,7 +291,35 @@ class ClanService{
 			$clan->dissolve();
 			return "Clan has been dissoved";
 		}
-		
 	}
+	
+	public static function admire($parameter){
+		if(ParaCheck::check($parameter, ["username","member_name","type"])){
+			$user = User::getInstance($parameter["username"]);
+			$member = User::getInstance($parameter["member_name"]);
+			$type = $parameter["type"];
+		}
+		if($parameter['username'] == $parameter['member_name']){
+			throw new Exception("不能自己膜拜自己......");
+		}
+		if($user->getUserInfo("clan_name") != $member->getUserInfo("clan_name")){
+			throw new Exception("Request denied: Two users are not in the same clan");
+		}
+		if($user->getUserInfo("level") >= $member->getUserInfo("level")){
+			throw new Exception("Request denied: 只能膜拜比你等级高的玩家");
+		}
+		$vip_level = $user->getUserInfo("vip_level");
+		$admire_num = $user->getUserClanInfo("admire_num");
+		if(($vip_level < 8 && $admire_num >= 1) || (8 <= $vip_level && $vip_level < 12 && $admire_num >= 2) || $admire_num >= 3){
+			throw new Exception("膜拜次数已用完");
+		}
+		if($type == DIAMOND_ADMIRE && $vip_level < 9){
+			throw new Exception("VIP9才能开启钻石膜拜");
+		}
+		$user->admire($type);
+		$member->beAdmired($type);
+		return "Admire successfully";
+	}
+	
 }
 ?>

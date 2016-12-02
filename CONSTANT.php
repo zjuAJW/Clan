@@ -6,3 +6,6 @@ define("MAX_CLAN_ELDER_NUM",3);
 define("CLAN_LEADER",1);
 define("CLAN_ELDER",2);
 define("CLAN_MEMBER",3);
+define("FREE_ADMIRE",1);
+define("GOLD_ADMIRE",2);
+define("DIAMOND_ADMIRE",3);

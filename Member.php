@@ -28,5 +28,40 @@ class Member extends User{
 		return $result;
 	}
 	
+	public function admire($type){
+		switch($type){
+			case FREE_ADMIRE:
+				$sql = "update user_clan set admire_num = admire_num + 1, admire_reward_energy = admire_reward_energy + 15 where username = '$this->username'";
+				$this->con->query($sql);
+				break;
+			case GOLD_ADMIRE:
+				$this->changeGold(-30000);
+				$sql = "update user_clan set admire_num = admire_num + 1, admire_reward_energy = admire_reward_energy + 30 where username = '$this->username'";
+				$this->con->query($sql);
+				break;
+			case DIAMOND_ADMIRE:
+				$this->changeDiamond(-150);
+				$sql = "update user_clan set admire_num = admire_num + 1, admire_reward_energy = admire_reward_energy + 100 where username = '$this->username'";
+				$this->con->query($sql);
+				break;
+		}
+	}
+	
+	public function beAdmired($type){
+		switch($type){
+			case FREE_ADMIRE:
+				$sql = "update user_clan set admire_reward_gold = admire_reward_gold + 1000 where username = '$this->username'"; //TODO:这里如果一直累加不领的话会不会超上限啊？
+				$this->con->query($sql);
+				break;
+			case GOLD_ADMIRE:
+				$sql = "update user_clan set admire_reward_gold = admire_reward_gold + 5000 where username = '$this->username'";
+				$this->con->query($sql);
+				break;
+			case DIAMOND_ADMIRE:
+				$sql = "update user_clan set admire_reward_gold = admire_reward_gold + 10000 where username = '$this->username'";
+				$this->con->query($sql);
+				break;
+		}
+	}
 }
 ?>

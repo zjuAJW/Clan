@@ -121,12 +121,13 @@ class Clan{
 	}
 	
 	public function dissolve(){
-		$sql = "update user set clan_name = Null where clan_name = '$this->clan_name'";
+		$sql = "update user set clan_name = null where clan_name = '$this->clan_name'";
 		$this->con->query($sql);
 		$sql = "update user_clan set clan_name = null,clan_job = null,join_time = null,contribution = 0,instance_num = 0 where clan_name = '$this->clan_name'";
 		$this->con->query($sql);
 		$sql = "delete from clan where clan_name = '$this->clan_name'";
 		$this->con->query($sql);
 	}
+	
 }
 ?>

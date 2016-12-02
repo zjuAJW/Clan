@@ -31,6 +31,16 @@ class User{
 		}
 	}
 	
+	public function changeGold($num){
+		$gold = $this->getUserInfo("gold");
+		if($gold + $num < 0){
+			throw new Exception("金币不足");
+		}else{
+			$sql = "update user set gold = gold + '$num' where username = '$this->username'";
+			$this->con->query($sql);
+		}
+	}
+	
 	public function changeLevel($diff){
 		$sql = "update user set level = level + '$diff' where username = '$this->username'";
 		$this->con->query($sql);

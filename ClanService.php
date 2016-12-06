@@ -331,8 +331,18 @@ class ClanService{
 			$user->getAdmireReward();
 			return "Get reward successfully";		
 		}
-			
 	}
 	
+	public static function sendOutSoldier($parameter){
+		if(ParaCheck::check($parameter, ["username","soldier_id"])){
+			$user = User::getInstance($parameter["username"]);
+			$soldier_id = $parameter["soldier_id"];
+		}
+		$clan_name = $user->getUserInfo("clan_name");
+		if($clan_name == null){
+			throw new Exception("Request denied: Join a clan to send out soldiers");
+		}
+		
+	}
 }
 ?>

@@ -35,7 +35,7 @@ class JsonHandler{
 	}
 	
 	public static function handleException($e){
-		echo $e->getMessage();
+		return $e->getMessage();
 	}
 	
 }

@@ -19,6 +19,18 @@ class Member extends User{
 		return $result[0][$info];
 	}
 	
+	public function getUserSoldierInfo($soldier_id){
+		if($soldier_id == 0){
+			$sql = "select * from user_soldier where username = '$this->username'";
+			$result = $this->con->query($sql);
+			return $result;
+		}else{
+			$sql = "select * from user_soldier where username = '$this->username' and soldier_id = '$soldier_id'";
+			$result = $this->con->query($sql);
+			return $result[0];
+		}
+	}
+	
 	
 	public function addClanQuitRecord($kickout){
 		$date = date('Y-m-d H:i:s',time());
@@ -72,6 +84,19 @@ class Member extends User{
 		$sql = "update user_clan set admire_reward_gold = 0 where username = '$this->username'";
 		$this->con->query($sql);
 		$this->changeGold($reward);
+	}
+	
+	public function sendOutSoldier($soldier_id){
+		$soldier = $this->getUserSoldierInfo($soldier_id);
+		if(isset($soldier)){
+			$clan_name = $this->getUserInfo("clan_name");
+			$level = $soldier['level'];
+			$CE = 
+			$date = date("Y:m:d H:i:s",time());
+			$sql = "insert into soldier_sent_out (username,clan_name,time_send_out,level,price) 
+					values ('$this->username','$clan_name','$date','$level','$price')";
+			
+		}
 	}
 }
 ?>

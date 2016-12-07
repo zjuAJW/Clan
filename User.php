@@ -1,14 +1,14 @@
 <?php
 require_once 'MysqlConnect.php';
 class User{
-	protected $username;
+	protected $uid;
 	protected $con;
 	
-	public function __construct($username){
-		if(!self::isUserExist($username)){
+	public function __construct($uid){
+		if(!self::isUserExist($uid)){
 			throw new Exception("No such user!");
 		}else{
-			$this->username = $username;
+			$this->uid = $uid;
 			$this->con = MysqlConnect::getInstance();
 		}
 	}
@@ -16,7 +16,7 @@ class User{
 	
 	public function getUserInfo($info){
 		$con = MysqlConnect::getInstance();
-		$sql = "select * from user where username = '$this->username'";
+		$sql = "select * from user where uid = '$this->uid'";
 		$result = $con->query($sql);
 		return $result[0][$info];
 	}
@@ -26,7 +26,7 @@ class User{
 		if($diamond + $num < 0){
 			throw new Exception("宝石不足");
 		}else{
-			$sql = "update user set diamond = diamond + '$num' where username = '$this->username'";
+			$sql = "update user set diamond = diamond + '$num' where uid = '$this->uid'";
 			$this->con->query($sql);
 		}
 	}
@@ -36,13 +36,13 @@ class User{
 		if($gold + $num < 0){
 			throw new Exception("金币不足");
 		}else{
-			$sql = "update user set gold = gold + '$num' where username = '$this->username'";
+			$sql = "update user set gold = gold + '$num' where uid = '$this->uid'";
 			$this->con->query($sql);
 		}
 	}
 	
 	public function changeLevel($diff){
-		$sql = "update user set level = level + '$diff' where username = '$this->username'";
+		$sql = "update user set level = level + '$diff' where uid = '$this->uid'";
 		$this->con->query($sql);
 	}
 	
@@ -51,48 +51,48 @@ class User{
 		if($energy + $num < 0){
 			throw new Exception("体力不足");
 		}else{
-			$sql = "update user set energy = energy + '$num' where username = '$this->username'";
+			$sql = "update user set energy = energy + '$num' where uid = '$this->uid'";
 			$this->con->query($sql);
 		}
 	}
 	
 	public function getClanQuitRecord(){
-		$sql = "select * from clan_quit_record where username = '$this->username'";
+		$sql = "select * from clan_quit_record where uid = '$this->uid'";
 		$quit_result = $this->con->query($sql);
 		return $quit_result;
 	}
 	
 	public function deleteClanQuitRecord($clan_name){
-		$sql = "delete from clan_quit_record where username = '$this->username' and clan_name = '$clan_name'";
+		$sql = "delete from clan_quit_record where uid = '$this->uid' and clan_name = '$clan_name'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
 	
 	public function addClanJoinRecord($clan_name){
 		$date = date('Y-m-d H:i:s',time());
-		$sql = "select * from clan_join_in_request where username = '$this->username' and clan_name = '$clan_name'";
+		$sql = "select * from clan_join_in_request where uid = '$this->uid' and clan_name = '$clan_name'";
 		$join_result = $this->con->query($sql);
 		if(!count($join_result)){
-			$sql = "insert into clan_join_in_request (username,clan_name,request_time) values ('$this->username','$clan_name','$date')";
+			$sql = "insert into clan_join_in_request (uid,clan_name,request_time) values ('$this->uid','$clan_name','$date')";
 			$result = $this->con->query($sql);
 		}
 	}
 	
 	public function deleteClanJoinRecord($clan_name){
-		$sql = "delete from clan_join_in_request where username = '$this->username' and clan_name = '$clan_name'";
+		$sql = "delete from clan_join_in_request where uid = '$this->username' and clan_name = '$clan_name'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
 	
 	public function getClanJoinRecord($clan_name){
-		$sql = "select * from clan_join_in_request where username = '$this->username' and clan_name = '$clan_name'";
+		$sql = "select * from clan_join_in_request where uid = '$this->uid' and clan_name = '$clan_name'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
 	
-	public static function isUserExist($username){
+	public static function isUserExist($uid){
 		$con = MysqlConnect::getInstance();
-		$result = $con->query("select * from user where username = '$username'");
+		$result = $con->query("select * from user where uid = '$uid'");
 		if(count($result)!=0){
 			return true;
 		}else{
@@ -119,25 +119,25 @@ class User{
 	}
 	
 	
-	public static function getInstance($username){
-		if(!self::isUserExist($username)){
+	public static function getInstance($uid){
+		if(!self::isUserExist($uid)){
 			throw new Exception("User not exists");
 		}
 		$con = MysqlConnect::getInstance();
-		$sql = "select * from user_clan where username = '$username'";
+		$sql = "select * from user_clan where uid = '$uid'";
 		$result = $con->query($sql);
 		switch ($result[0]['clan_job']){
 			case null:
-				return new User($username);
+				return new User($uid);
 				break;
 			case CLAN_LEADER:
-				return new Leader($username);
+				return new Leader($uid);
 				break;
 			case CLAN_ELDER:
-				return new Elder($username);
+				return new Elder($uid);
 				break;
 			case CLAN_MEMBER:
-				return new Member($username);
+				return new Member($uid);
 				break;
 			default:
 				throw new Exception("User class getInstance error: wrong clan job");

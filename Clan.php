@@ -5,21 +5,21 @@ require_once 'Member.php';
 require_once 'Leader.php';
 require_once 'Elder.php';
 class Clan{
-	protected $clan_name;
+	protected $clan_id;
 	protected $con;
 	
-	public function __construct($clan_name){
-		if(!self::isClanExist($clan_name)){
-			echo($clan_name);
+	public function __construct($clan_id){
+		if(!self::isClanExist($clan_id)){
+			//echo($clan_name);
 			throw new Exception("No such Clan");
 		}else{
-			$this->clan_name = $clan_name;
+			$this->clan_id = $clan_id;
 			$this->con = MysqlConnect::getInstance();
 		}
 	}
 	
 	public function getClanInfo($info){
-		$sql = "select * from clan where clan_name = '$this->clan_name'";
+		$sql = "select * from clan where clan_id = '$this->clan_id'";
 		$result = $this->con->query($sql);
 		if($info != "all"){
 			return $result[0][$info];
@@ -31,38 +31,40 @@ class Clan{
 	
 	public function addMember($member){
 		$date = date('Y-m-d H:i:s',time());
-		$username = $member->getUserInfo("username");
-		$sql = "update user set clan_name = '$this->clan_name' where username = '$username'";
+		$uid = $member->getUserInfo("uid");
+		$sql = "update user set clan_id = '$this->clan_id' where uid = '$uid'";
 		$this->con->query($sql);
-		$sql = "update user_clan set clan_name = '$this->clan_name',clan_job = 3,join_time = '$date' where username = '$username'";
+		$sql = "update user_clan set clan_id = '$this->clan_id',clan_job = 3,join_time = '$date' where uid = '$uid'";
 		$this->con->query($sql);
-		$sql = "update clan set member_num = member_num + 1 where clan_name = '$this->clan_name'";
+		$sql = "update clan set member_num = member_num + 1 where clan_id = '$this->clan_id'";
 		$this->con->query($sql);
-		$sql = "delete from clan_join_in_request where username = '$username'";
+		$sql = "delete from clan_join_in_request where uid = '$uid'";
 		$this->con->query($sql);
 	}
 	
 	public function deleteMember($member){
-		$username = $member->getUserInfo("username");
-		$this->con->query("update user set clan_name = null where username = '$username'");
-		$this->con->query("update user_clan set clan_name = null,clan_job = null,join_time = null,contribution = 0,instance_num = 0 where username = '$username'");
-		$this->con->query("update clan set member_num = member_num - 1 where clan_name = '$this->clan_name'");
+		$uid = $member->getUserInfo("uid");
+		$this->con->query("update user set clan_id = null where uid = '$uid'");
+		$this->con->query("update user_clan set clan_id = null,clan_job = null,join_time = null,contribution = 0,instance_num = 0 where uid = '$uid'");
+		$this->con->query("update clan set member_num = member_num - 1 where clan_id = '$this->clan_id'");
 	}
 	
 	public static function createClan($clan_name,$leader,$icon_id){
-		$leader_name = $leader->getUserInfo('username');
+		$leader_id = $leader->getUserInfo('uid');
 		$con = MysqlConnect::getInstance();
 		$date = date('Y-m-d H:i:s',time());
-		$sql = "Insert into clan(clan_name,member_num,leader,icon_id,create_time) values('$clan_name',1,'$leader_name','$icon_id','$date')";
+		$sql = "Insert into clan(clan_name,member_num,leader,icon_id,create_time) values('$clan_name',1,'$leader_id','$icon_id','$date')";
 		$con->query($sql);
-		$sql = "update user_clan set clan_name = '$clan_name',clan_job = ".CLAN_LEADER.",join_time = '$date',contribution = 0 where username = '$leader_name'";
+		$clan_id = $con->query("select id from clan where clan_name = '$clan_name'")[0]["id"];
+		$sql = "update user_clan set clan_id = '$clan_id',clan_job = ".CLAN_LEADER.",join_time = '$date',contribution = 0 where uid = '$leader_id'";
 		$con->query($sql);
-		$sql = "update user set clan_name = '$clan_name' where username = '$leader_name'";
+		$sql = "update user set clan_id = '$clan_id' where uid = '$leader_id'";
 		$con->query($sql);
 		$leader->changeDiamond(-1000);
-		return new Clan($clan_name);
 	}
 	
+	
+	//TODO:改到这里
 	public function setJob($member_name,$job){
 		$sql = "update user_clan set clan_job = '$job' where username = '$member_name'";
 		$result = $this->con->query($sql);

@@ -63,17 +63,15 @@ class Clan{
 		$leader->changeDiamond(-1000);
 	}
 	
-	
-	//TODO:改到这里
-	public function setJob($member_name,$job){
-		$sql = "update user_clan set clan_job = '$job' where username = '$member_name'";
+	public function setJob($uid,$job){
+		$sql = "update user_clan set clan_job = '$job' where uid = '$uid'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
 	
-	public static function isClanExist($clan_name){
+	public static function isClanExist($clan_id){
 		$con = MysqlConnect::getInstance();
-		$sql = "select * from clan where clan_name = '$clan_name'";
+		$sql = "select * from clan where id = '$clan_id'";
 		$result = $con->query($sql);
 		if(count($result) == 0){
 			return false;
@@ -83,51 +81,47 @@ class Clan{
 	}
 	
 	public function changeClanName($new_name){
-		$sql = "update clan set clan_name = '$new_name' where clan_name = '$this->clan_name'";
+		$sql = "update clan set clan_name = '$new_name' where id = '$this->clan_id'";
 		$result = $this->con->query($sql);
-		$sql = "update user set clan_name = '$new_name' where clan_name = '$this->clan_name'";
-		$result = $result && $this->con->query($sql);
-		$sql = "update user_clan set clan_name = '$new_name' where clan_name = '$this->clan_name'";
-		$result = $result && $this->con->query($sql);
 		return $result;
 	}
 	
 	public function changeClanIcon($new_icon){
-		$sql = "update clan set icon_id = '$new_icon' where clan_name = '$this->clan_name'";
+		$sql = "update clan set icon_id = '$new_icon' where clan_id = '$this->clan_id'";
 		$result = $this->con->query;
 		return $result;
 	}
 	
 	public function changeClanType($new_type){
-		$sql = "update clan set type = '$new_type' where clan_name = '$this->clan_name'";
+		$sql = "update clan set type = '$new_type' where clan_id = '$this->clan_id'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
 	
 	public function changeLevelRequired($level){
-		$sql = "update clan set level_required = '$level' where clan_name = '$this->clan_name'";
+		$sql = "update clan set level_required = '$level' where clan_id = '$this->clan_id'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
 	
 	public function changeNotice($notice){
-		$sql = "update clan set notice = '$notice' where clan_name = '$this->clan_name'";
+		$sql = "update clan set notice = '$notice' where clan_id = '$this->clan_id'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
 	
 	public function getElderNum(){
-		$sql = "select * from user_clan where clan_name = '$this->clan_name' and clan_job =".CLAN_ELDER;
+		$sql = "select * from user_clan where clan_id = '$this->clan_id' and clan_job =".CLAN_ELDER;
 		$result = $this->con->query($sql);
 		return count($result);
 	}
 	
 	public function dissolve(){
-		$sql = "update user set clan_name = null where clan_name = '$this->clan_name'";
+		$sql = "update user set clan_id = null where clan_id = '$this->clan_id'";
 		$this->con->query($sql);
-		$sql = "update user_clan set clan_name = null,clan_job = null,join_time = null,contribution = 0,instance_num = 0 where clan_name = '$this->clan_name'";
+		$sql = "update user_clan set clan_id = null,clan_job = null,join_time = null,contribution = 0,instance_num = 0 where clan_id = '$this->clan_id'";
 		$this->con->query($sql);
-		$sql = "delete from clan where clan_name = '$this->clan_name'";
+		$sql = "delete from clan where clan_id = '$this->clan_id'";
 		$this->con->query($sql);
 	}
 	

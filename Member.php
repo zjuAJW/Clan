@@ -4,28 +4,20 @@ require_once 'User.php';
 class Member extends User{
 	//protected $con = MysqlConnect::getInstance();
 	//构造函数
-	public function __construct($username){
-		if(!self::isUserExist($username)){
-			throw new Exception("No such user!");
-		}else{
-			$this->username = $username;
-			$this->con = MysqlConnect::getInstance();
-		}
-	}
 	
 	public function getUserClanInfo($info){
-		$sql = "select * from user_clan where username = '$this->username'";
+		$sql = "select * from user_clan where uid = '$this->uid'";
 		$result = $this->con->query($sql);
 		return $result[0][$info];
 	}
 	
 	public function getUserSoldierInfo($soldier_id){
 		if($soldier_id == 0){
-			$sql = "select * from user_soldier where username = '$this->username'";
+			$sql = "select * from user_soldier where uid = '$this->uid'";
 			$result = $this->con->query($sql);
 			return $result;
 		}else{
-			$sql = "select * from user_soldier where username = '$this->username' and soldier_id = '$soldier_id'";
+			$sql = "select * from user_soldier where uid = '$this->uid' and soldier_id = '$soldier_id'";
 			$result = $this->con->query($sql);
 			return $result[0];
 		}
@@ -43,19 +35,19 @@ class Member extends User{
 	public function admire($type){
 		switch($type){
 			case FREE_ADMIRE:
-				$sql = "update user_clan set admire_num = admire_num + 1 where username = '$this->username'";
+				$sql = "update user_clan set admire_num = admire_num + 1 where uid = '$this->uid'";
 				$this->con->query($sql);
 				$this->changeEnergy(15);
 				break;
 			case GOLD_ADMIRE:
 				$this->changeGold(-30000);
-				$sql = "update user_clan set admire_num = admire_num + 1 where username = '$this->username'";
+				$sql = "update user_clan set admire_num = admire_num + 1 where uid = '$this->uid'";
 				$this->con->query($sql);
 				$this->changeEnergy(30);
 				break;
 			case DIAMOND_ADMIRE:
 				$this->changeDiamond(-150);
-				$sql = "update user_clan set admire_num = admire_num + 1 where username = '$this->username'";
+				$sql = "update user_clan set admire_num = admire_num + 1 where uid = '$this->uid'";
 				$this->con->query($sql);
 				$this->changeEnergy(100);
 				break;
@@ -65,15 +57,15 @@ class Member extends User{
 	public function beAdmired($type){
 		switch($type){
 			case FREE_ADMIRE:
-				$sql = "update user_clan set admire_reward_gold = admire_reward_gold + 1000 where username = '$this->username'"; //TODO:这里如果一直累加不领的话会不会超上限啊？
+				$sql = "update user_clan set admire_reward_gold = admire_reward_gold + 1000 where uid = '$this->uid'"; //TODO:这里如果一直累加不领的话会不会超上限啊？
 				$this->con->query($sql);
 				break;
 			case GOLD_ADMIRE:
-				$sql = "update user_clan set admire_reward_gold = admire_reward_gold + 5000 where username = '$this->username'";
+				$sql = "update user_clan set admire_reward_gold = admire_reward_gold + 5000 where uid = '$this->uid'";
 				$this->con->query($sql);
 				break;
 			case DIAMOND_ADMIRE:
-				$sql = "update user_clan set admire_reward_gold = admire_reward_gold + 10000 where username = '$this->username'";
+				$sql = "update user_clan set admire_reward_gold = admire_reward_gold + 10000 where uid = '$this->uid'";
 				$this->con->query($sql);
 				break;
 		}
@@ -81,7 +73,7 @@ class Member extends User{
 	
 	public function getAdmireReward(){
 		$reward = $this->getUserClanInfo("admire_reward_gold");
-		$sql = "update user_clan set admire_reward_gold = 0 where username = '$this->username'";
+		$sql = "update user_clan set admire_reward_gold = 0 where uid = '$this->uid'";
 		$this->con->query($sql);
 		$this->changeGold($reward);
 	}
@@ -89,12 +81,12 @@ class Member extends User{
 	public function sendOutSoldier($soldier_id){
 		$soldier = $this->getUserSoldierInfo($soldier_id);
 		if(isset($soldier)){
-			$clan_name = $this->getUserInfo("clan_name");
+			$clan_id = $this->getUserInfo("clan_id");
 			$level = $soldier['level'];
-			$CE = 
+			$CE = 100;
 			$date = date("Y:m:d H:i:s",time());
-			$sql = "insert into soldier_sent_out (username,clan_name,time_send_out,level,price) 
-					values ('$this->username','$clan_name','$date','$level','$price')";
+			$sql = "insert into soldier_sent_out (uid,clan_id,time_send_out,level,price) 
+					values ('$this->uid','$clan_id','$date','$level','$price')";
 			
 		}
 	}

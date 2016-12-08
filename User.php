@@ -13,11 +13,16 @@ class User{
 		}
 	}
 	
-	
 	public function getUserInfo($info){
 		$con = MysqlConnect::getInstance();
 		$sql = "select * from user where uid = '$this->uid'";
 		$result = $con->query($sql);
+		return $result[0][$info];
+	}
+	
+	public function getUserClanInfo($info){
+		$sql = "select * from user_clan where uid = '$this->uid'";
+		$result = $this->con->query($sql);
 		return $result[0][$info];
 	}
 	
@@ -48,10 +53,10 @@ class User{
 	
 	public function changeEnergy($diff){
 		$energy = $this->getUserInfo("energy");
-		if($energy + $num < 0){
+		if($energy + $diff < 0){
 			throw new Exception("体力不足");
 		}else{
-			$sql = "update user set energy = energy + '$num' where uid = '$this->uid'";
+			$sql = "update user set energy = energy + '$diff' where uid = '$this->uid'";
 			$this->con->query($sql);
 		}
 	}
@@ -62,30 +67,30 @@ class User{
 		return $quit_result;
 	}
 	
-	public function deleteClanQuitRecord($clan_name){
-		$sql = "delete from clan_quit_record where uid = '$this->uid' and clan_name = '$clan_name'";
+	public function deleteClanQuitRecord($clan_id){
+		$sql = "delete from clan_quit_record where uid = '$this->uid' and clan_id = '$clan_id'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
 	
-	public function addClanJoinRecord($clan_name){
+	public function addClanJoinRecord($clan_id){
 		$date = date('Y-m-d H:i:s',time());
-		$sql = "select * from clan_join_in_request where uid = '$this->uid' and clan_name = '$clan_name'";
+		$sql = "select * from clan_join_in_request where uid = '$this->uid' and clan_id = '$clan_id'";
 		$join_result = $this->con->query($sql);
 		if(!count($join_result)){
-			$sql = "insert into clan_join_in_request (uid,clan_name,request_time) values ('$this->uid','$clan_name','$date')";
+			$sql = "insert into clan_join_in_request (uid,clan_id,request_time) values ('$this->uid','$clan_id','$date')";
 			$result = $this->con->query($sql);
 		}
 	}
 	
-	public function deleteClanJoinRecord($clan_name){
-		$sql = "delete from clan_join_in_request where uid = '$this->username' and clan_name = '$clan_name'";
+	public function deleteClanJoinRecord($clan_id){
+		$sql = "delete from clan_join_in_request where uid = '$this->uid' and clan_id = '$clan_id'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
 	
-	public function getClanJoinRecord($clan_name){
-		$sql = "select * from clan_join_in_request where uid = '$this->uid' and clan_name = '$clan_name'";
+	public function getClanJoinRecord($clan_id){
+		$sql = "select * from clan_join_in_request where uid = '$this->uid' and clan_id = '$clan_id'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
@@ -100,7 +105,6 @@ class User{
 		}
 	}
 	
-	
 	public static function register($username,$password,$nickname){
 		$con = MysqlConnect::getInstance();
 		$result = $con->query("select * from user where username = '$username'");
@@ -114,10 +118,10 @@ class User{
 		}
 		$date = date('Y-m-d H:i:s',time());
 		$con->query("insert into user(username,password,nickname,time_last_log_in,time_register) values ('$username','$password','$nickname','$date','$date')");
-		$con->query("insert into user_clan(username) values ('$username')");
-		return new User($username);
+		$uid = $con->query("select uid from user where username = '$username'")[0]['uid'];
+		$con->query("insert into user_clan(uid) values ('$uid')");
+		return new User($uid);
 	}
-	
 	
 	public static function getInstance($uid){
 		if(!self::isUserExist($uid)){

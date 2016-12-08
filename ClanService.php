@@ -40,7 +40,7 @@ class ClanService{
 		$clan = new Clan($user->getUserClanInfo('clan_id'));
 		$user->addClanQuitRecord(0);
 		$clan->deleteMember($user);
-		
+		return "Quit Clan successfully";
 	}
 	
 	public static function joinClan($parameter){
@@ -153,6 +153,8 @@ class ClanService{
 		}
 	}
 	
+	
+	//TODO：感觉这个函数写的有问题。。。。。。（每个拆开？工会名字好像应该判断一下到底有没有变过）
 	public static function clanSettings($parameter){
 		if(ParaCheck::check($parameter, ['uid','clan_name','icon_id','type','level_required'])){
 			$user = User::getInstance($parameter['uid']);
@@ -164,9 +166,9 @@ class ClanService{
 		if(!$user instanceof Leader){
 			throw new Exception("Request denied: Only the leader can change settings");
 		}else{
-			$clan_name = $user->getUserClanInfo("clan_id");
+			$clan_id = $user->getUserClanInfo("clan_id");
 			$clan = new Clan($clan_id);
-			if(!empty($clan_name)){
+			if(!empty($new_name)){
 				$user->changeDiamond(-500);
 				$clan->changeClanName($new_name);
 			}
@@ -179,7 +181,7 @@ class ClanService{
 			if(!empty($level_required)){
 				$clan->changeLevelRequired($level_required);
 			}
-			return "修改成功";
+			return "Modified done";
 		}
 	}
 	
@@ -236,8 +238,8 @@ class ClanService{
 			throw new Exception("You can't change your own job");
 		}else{
 			$clan_id = $user->getUserClanInfo("clan_id");
-			$clan = new Clan($clan_name);
-			if(!($member->getUserInfo("clan_id") == $clan_id)){
+			$clan = new Clan($clan_id);
+			if(!($member->getUserClanInfo("clan_id") == $clan_id)){
 				throw new Exception("Request denied: member not in clan");
 			}else{
 				switch($job){
@@ -303,7 +305,7 @@ class ClanService{
 		if($parameter['uid'] == $parameter['member_id']){
 			throw new Exception("不能自己膜拜自己......");
 		}
-		if($user->getUserClanInfo("clan_id") != $member->getUserInfo("clan_id")){
+		if($user->getUserClanInfo("clan_id") != $member->getUserClanInfo("clan_id")){
 			throw new Exception("Request denied: Two users are not in the same clan");
 		}
 		if($user->getUserInfo("level") >= $member->getUserInfo("level")){
@@ -339,7 +341,7 @@ class ClanService{
 			$user = User::getInstance($parameter["uid"]);
 			$soldier_id = $parameter["soldier_id"];
 		}
-		$clan_id = $user->getUserInfo("clan_id");
+		$clan_id = $user->getUserClanInfo("clan_id");
 		if($clan_id == null){
 			throw new Exception("Request denied: Join a clan to send out soldiers");
 		}

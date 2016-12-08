@@ -5,11 +5,7 @@ class Member extends User{
 	//protected $con = MysqlConnect::getInstance();
 	//构造函数
 	
-	public function getUserClanInfo($info){
-		$sql = "select * from user_clan where uid = '$this->uid'";
-		$result = $this->con->query($sql);
-		return $result[0][$info];
-	}
+
 	
 	public function getUserSoldierInfo($soldier_id){
 		if($soldier_id == 0){
@@ -26,8 +22,8 @@ class Member extends User{
 	
 	public function addClanQuitRecord($kickout){
 		$date = date('Y-m-d H:i:s',time());
-		$clan_name = $this->getUserClanInfo("clan_name");
-		$sql = "insert into clan_quit_record (username,clan_name,quit_time,kickout) values ('$this->username','$clan_name','$date','$kickout')";
+		$clan_id = $this->getUserClanInfo("clan_id");
+		$sql = "insert into clan_quit_record (uid,clan_id,quit_time,kickout) values ('$this->uid','$clan_id','$date','$kickout')";
 		$result = $this->con->query($sql);
 		return $result;
 	}
@@ -81,7 +77,7 @@ class Member extends User{
 	public function sendOutSoldier($soldier_id){
 		$soldier = $this->getUserSoldierInfo($soldier_id);
 		if(isset($soldier)){
-			$clan_id = $this->getUserInfo("clan_id");
+			$clan_id = $this->getUserClanInfo("clan_id");
 			$level = $soldier['level'];
 			$CE = 100;
 			$date = date("Y:m:d H:i:s",time());

@@ -32,11 +32,9 @@ class Clan{
 	public function addMember($member){
 		$date = date('Y-m-d H:i:s',time());
 		$uid = $member->getUserInfo("uid");
-		$sql = "update user set clan_id = '$this->clan_id' where uid = '$uid'";
-		$this->con->query($sql);
 		$sql = "update user_clan set clan_id = '$this->clan_id',clan_job = 3,join_time = '$date' where uid = '$uid'";
 		$this->con->query($sql);
-		$sql = "update clan set member_num = member_num + 1 where clan_id = '$this->clan_id'";
+		$sql = "update clan set member_num = member_num + 1 where id = '$this->clan_id'";
 		$this->con->query($sql);
 		$sql = "delete from clan_join_in_request where uid = '$uid'";
 		$this->con->query($sql);
@@ -46,7 +44,7 @@ class Clan{
 		$uid = $member->getUserInfo("uid");
 		$this->con->query("update user set clan_id = null where uid = '$uid'");
 		$this->con->query("update user_clan set clan_id = null,clan_job = null,join_time = null,contribution = 0,instance_num = 0 where uid = '$uid'");
-		$this->con->query("update clan set member_num = member_num - 1 where clan_id = '$this->clan_id'");
+		$this->con->query("update clan set member_num = member_num - 1 where id = '$this->clan_id'");
 	}
 	
 	public static function createClan($clan_name,$leader,$icon_id){
@@ -57,8 +55,6 @@ class Clan{
 		$con->query($sql);
 		$clan_id = $con->query("select id from clan where clan_name = '$clan_name'")[0]["id"];
 		$sql = "update user_clan set clan_id = '$clan_id',clan_job = ".CLAN_LEADER.",join_time = '$date',contribution = 0 where uid = '$leader_id'";
-		$con->query($sql);
-		$sql = "update user set clan_id = '$clan_id' where uid = '$leader_id'";
 		$con->query($sql);
 		$leader->changeDiamond(-1000);
 	}
@@ -87,25 +83,25 @@ class Clan{
 	}
 	
 	public function changeClanIcon($new_icon){
-		$sql = "update clan set icon_id = '$new_icon' where clan_id = '$this->clan_id'";
-		$result = $this->con->query;
+		$sql = "update clan set icon_id = '$new_icon' where id = '$this->clan_id'";
+		$result = $this->con->query($sql);
 		return $result;
 	}
 	
 	public function changeClanType($new_type){
-		$sql = "update clan set type = '$new_type' where clan_id = '$this->clan_id'";
+		$sql = "update clan set type = '$new_type' where id = '$this->clan_id'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
 	
 	public function changeLevelRequired($level){
-		$sql = "update clan set level_required = '$level' where clan_id = '$this->clan_id'";
+		$sql = "update clan set level_required = '$level' where id = '$this->clan_id'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
 	
 	public function changeNotice($notice){
-		$sql = "update clan set notice = '$notice' where clan_id = '$this->clan_id'";
+		$sql = "update clan set notice = '$notice' where id = '$this->clan_id'";
 		$result = $this->con->query($sql);
 		return $result;
 	}
@@ -121,7 +117,7 @@ class Clan{
 		$this->con->query($sql);
 		$sql = "update user_clan set clan_id = null,clan_job = null,join_time = null,contribution = 0,instance_num = 0 where clan_id = '$this->clan_id'";
 		$this->con->query($sql);
-		$sql = "delete from clan where clan_id = '$this->clan_id'";
+		$sql = "delete from clan where id = '$this->clan_id'";
 		$this->con->query($sql);
 	}
 	

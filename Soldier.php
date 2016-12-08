@@ -12,7 +12,7 @@ class Soldier{
 
 	
 	public function getSoldierInfo($info){
-		$sql = "select * from user_soldier where username = '$this->username' and soldier_id = '$this->soldier_id";
+		$sql = "select * from user_soldier where uid = '$this->uid' and soldier_id = '$this->soldier_id";
 		$result = $this->con->query($sql);
 		return $result[0][$info];
 	}

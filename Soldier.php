@@ -10,11 +10,21 @@ class Soldier{
 		$this->con = MysqlConnect::getInstance();
 	}
 
-	
 	public function getSoldierInfo($info){
 		$sql = "select * from user_soldier where uid = '$this->uid' and soldier_id = '$this->soldier_id";
 		$result = $this->con->query($sql);
 		return $result[0][$info];
 	}
+	
+	public function __get($property){
+		switch($property){
+			case "id":
+				return $this->id;
+			case "uid":
+				return $this->owner;
+		}
+	}
+	
+	
 }
 ?>

@@ -5,7 +5,7 @@ class gateWayFactory{
 		return file_get_contents("php://input");
 	}
 	
-	public static function creatGateWay(){
+	public static function createGateWay(){
 		$contentType = null;
 		$contentEncoding = null;
 		$acceptEncoding = null;

@@ -26,6 +26,22 @@ class User{
 		return $result[0][$info];
 	}
 	
+	public function getUserSoldierInfo($soldier_id){
+		if($soldier_id == 0){
+			$sql = "select * from user_soldier where uid = '$this->uid'";
+			$result = $this->con->query($sql);
+			return $result;
+		}else{
+			$sql = "select * from user_soldier where uid = '$this->uid' and soldier_id = '$soldier_id'";
+			$result = $this->con->query($sql);
+			if(isset($result[0])){
+				return $result[0];
+			}else{
+				return null;
+			}
+		}
+	}
+	
 	public function changeDiamond($num){
 		$diamond = $this->getUserInfo("diamond");
 		if($diamond + $num < 0){

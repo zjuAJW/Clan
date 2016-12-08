@@ -336,7 +336,7 @@ class ClanService{
 		}
 	}
 	
-	public static function sendOutSoldier($parameter){
+	public static function dispatchSoldier($parameter){
 		if(ParaCheck::check($parameter, ["uid","soldier_id"])){
 			$user = User::getInstance($parameter["uid"]);
 			$soldier_id = $parameter["soldier_id"];
@@ -345,6 +345,14 @@ class ClanService{
 		if($clan_id == null){
 			throw new Exception("Request denied: Join a clan to send out soldiers");
 		}
+		$vip = $user->getUserInfo("vip_level");
+		$soldier_dispatched = $user->getSoldierDispatched();
+		$dispatched_num = count($soldier_dispatched);
+		if(($vip<12 && $dispatched_num>=2) || ($vip>12 && $vip < 14 && $dispatched_num >= 3) || ($vip > 14 && $dispatched_num >= 4)){
+			throw new Exception("派出英雄已达上限");
+		}
+		$user->dispatchSoldier($soldier_id);
+		return "Soldier has been sent out";
 	}
 }
 ?>

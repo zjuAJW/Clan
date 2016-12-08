@@ -1,21 +1,24 @@
 <?php
 require_once 'MysqlConnect.php';
 require_once 'User.php';
+require_once 'Util.php';
+require_once 'Soldier.php';
 class Member extends User{
 	//protected $con = MysqlConnect::getInstance();
 	//构造函数
 	
-
-	
-	public function getUserSoldierInfo($soldier_id){
-		if($soldier_id == 0){
-			$sql = "select * from user_soldier where uid = '$this->uid'";
-			$result = $this->con->query($sql);
-			return $result;
+	public function getSoldierDispatched(){
+		$sql = "select * from soldier_dispatched where uid = '$this->uid'";
+		$result = $this->con->query($sql);
+		if($result){
+			$soldiers = [];
+			foreach($result as $s){
+				$soldier = new Soldier($s['soldier_id'],$s['uid']);
+				$soldiers[] = $soldier;
+			}
+			return $soldiers;
 		}else{
-			$sql = "select * from user_soldier where uid = '$this->uid' and soldier_id = '$soldier_id'";
-			$result = $this->con->query($sql);
-			return $result[0];
+			return null;
 		}
 	}
 	
@@ -74,16 +77,26 @@ class Member extends User{
 		$this->changeGold($reward);
 	}
 	
-	public function sendOutSoldier($soldier_id){
+	public function dispatchSoldier($soldier_id){
 		$soldier = $this->getUserSoldierInfo($soldier_id);
+		$soldier_dispatched = $this->getSoldierDispatched();
+		if($soldier_dispatched){
+			foreach($soldier_dispatched as $k){
+				if($k->id == $soldier_id){
+					throw new Exception("Soldier has already been dispatched");
+				}
+			}
+		}
 		if(isset($soldier)){
 			$clan_id = $this->getUserClanInfo("clan_id");
-			$level = $soldier['level'];
-			$CE = 100;
-			$date = date("Y:m:d H:i:s",time());
-			$sql = "insert into soldier_sent_out (uid,clan_id,time_send_out,level,price) 
-					values ('$this->uid','$clan_id','$date','$level','$price')";
-			
+			$CE = $soldier['CE'];
+			$date = date("Y-m-d H:i:s",time());
+			$price = Util::soldierPrice($CE);
+			$sql = "insert into soldier_dispatched (uid,clan_id,soldier_id,time_send_out,CE,price) 
+					values ($this->uid,$clan_id,$soldier_id,'$date',$CE,$price)";
+			$result = $this->con->query($sql);
+		}else{
+			throw new Exception("Request denied: User do not have soldier ".$soldier_id);
 		}
 	}
 }

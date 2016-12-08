@@ -1,6 +1,6 @@
 <?php
 require 'gateWayFactory.php';
-$handler = gateWayFactory::creatGateWay();
+$handler = gateWayFactory::createGateWay();
 $handler->processRequest();
 $handler->output();
 ?>

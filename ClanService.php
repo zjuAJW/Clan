@@ -342,7 +342,6 @@ class ClanService{
 		if($clan_name == null){
 			throw new Exception("Request denied: Join a clan to send out soldiers");
 		}
-		
 	}
 }
 ?>

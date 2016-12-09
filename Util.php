@@ -8,7 +8,7 @@ class Util{
 	public static function soldierIncome($time_dispatched,$employed_times,$price,$CE){
 		$employed_income = $employed_times * $price * 0.7;
 		$timeDiff = time() - strtotime($time_dispatched);
-		$guard_income = 0.2 *　sqrt($CE) * $timeDiff/60;
+		$guard_income = 0.2 * sqrt($CE) * $timeDiff/60;
 		return round($employed_income + $guard_income);
 	}
 	

@@ -5,9 +5,13 @@ class Soldier{
 	protected $owner;
 	protected $con;
 	public function __construct($id,$owner){
-		$this->id = $id;
-		$this->owner = $owner;
-		$this->con = MysqlConnect::getInstance();
+		if(self::isSoldierExist($id, $owner)){
+			$this->id = $id;
+			$this->owner = $owner;
+			$this->con = MysqlConnect::getInstance();
+		}else{
+			throw new Exception("No such soldier");
+		}
 	}
 
 	public function getSoldierInfo($info){
@@ -25,6 +29,15 @@ class Soldier{
 		}
 	}
 	
-	
+	public static function isSoldierExist($soldier_id,$uid){
+		$con = MysqlConnect::getInstance();
+		$sql = "select * from user_soldier where uid = $uid && soldier_id = $soldier_id";
+		$result = $con->query($sql);
+		if(isset($result)){
+			return true;
+		}else{
+			return false;
+		}
+	}
 }
 ?>

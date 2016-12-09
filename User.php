@@ -13,6 +13,13 @@ class User{
 		}
 	}
 	
+	public function __get($property){
+		switch($property){
+			case "uid":
+				return $this->uid;
+		}
+	}
+	
 	public function getUserInfo($info){
 		$con = MysqlConnect::getInstance();
 		$sql = "select * from user where uid = '$this->uid'";

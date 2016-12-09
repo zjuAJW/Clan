@@ -77,6 +77,12 @@ class Member extends User{
 		$this->changeGold($reward);
 	}
 	
+	public function getEmployedSoldier(){
+		$sql = "select * from soldier_employed where uid = $this->uid";
+		$result = $this->con->query($sql);
+		return $result;
+	}
+	
 	public function dispatchSoldier($soldier_id){
 		$soldier = $this->getUserSoldierInfo($soldier_id);
 		$soldier_dispatched = $this->getSoldierDispatched();
@@ -97,6 +103,18 @@ class Member extends User{
 			$result = $this->con->query($sql);
 		}else{
 			throw new Exception("Request denied: User do not have soldier ".$soldier_id);
+		}
+	}
+	
+	public function employSoldier($soldier,$owner){
+		$date = date("Y-m-d H:i:s",time());
+		$this->changeGold($soldier->price);
+		$sql = "insert into soldier_employed (uid,soldier_id,owner,time_employed) 
+										values ($this->uid,$soldier->id,$owner->uid,'$date')";
+		$this->con->query($sql);
+		$soldier->employed_times = $soldier->employed_times + 1;
+		if($soldier->employed_income < 200000){
+			$soldier->employed_income = $soldier->employed_income + ceil($soldier->price * 0.7);
 		}
 	}
 }

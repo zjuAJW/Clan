@@ -4,6 +4,8 @@ require_once 'Member.php';
 require_once 'Clan.php';
 require_once 'CONSTANT.php';
 require_once 'ParaCheck.php';
+require_once 'Util.php';
+require_once 'DispatchedSoldier.php';
 class ClanService{
 	public static function createClan($parameter){
 		if(ParaCheck::check($parameter, ["uid","clan_name","icon_id"])){
@@ -353,6 +355,34 @@ class ClanService{
 		}
 		$user->dispatchSoldier($soldier_id);
 		return "Soldier has been sent out";
+	}
+	
+	public static function employSoldier($parameter){
+		if(Util::checkParameter($parameter, ["uid","soldier_id","owner"])){
+			$owner = User::getInstance($parameter["owner"]);
+			$user = User::getInstance($parameter['uid']);
+			$soldier = new DispatchedSoldier($parameter["soldier_id"], $parameter["owner"]);
+		}
+		if($user->uid == $owner->uid){
+			throw new Exception("Request denied: 不能雇佣自己的英雄");
+		}
+		if(!($user->getUserClanInfo("clan_id") == $owner->getUserClanInfo("clan_id"))){
+			throw new Exception("Request denied: You can only employ soldier from your own clan");
+		}
+		if($user->getUserInfo("level") < $soldier->level){
+			throw new Exception("Request denied: You can only employ soldier whose level is lower than you");
+		}
+		$employed_soldier = $user->getEmployedSoldier();
+		if($employed_soldier){
+			foreach($employed_soldier as $s){
+				if($s['owner'] == $owner->uid){
+					throw new Exception("每天只能从同一支战队雇佣一位佣兵");
+				}
+			}
+		}
+		$user->employSoldier($soldier,$owner);
+		return "Employ successfully";
+		
 	}
 }
 ?>

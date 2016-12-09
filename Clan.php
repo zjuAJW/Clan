@@ -51,12 +51,12 @@ class Clan{
 		$leader_id = $leader->getUserInfo('uid');
 		$con = MysqlConnect::getInstance();
 		$date = date('Y-m-d H:i:s',time());
+		$leader->changeDiamond(-1000);
 		$sql = "Insert into clan(clan_name,member_num,leader,icon_id,create_time) values('$clan_name',1,'$leader_id','$icon_id','$date')";
 		$con->query($sql);
 		$clan_id = $con->query("select id from clan where clan_name = '$clan_name'")[0]["id"];
 		$sql = "update user_clan set clan_id = '$clan_id',clan_job = ".CLAN_LEADER.",join_time = '$date',contribution = 0 where uid = '$leader_id'";
 		$con->query($sql);
-		$leader->changeDiamond(-1000);
 	}
 	
 	public function setJob($uid,$job){

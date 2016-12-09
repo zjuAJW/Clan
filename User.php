@@ -17,6 +17,8 @@ class User{
 		switch($property){
 			case "uid":
 				return $this->uid;
+			default:
+				return $this->getUserInfo($property);
 		}
 	}
 	
@@ -60,7 +62,7 @@ class User{
 	}
 	
 	public function changeGold($num){
-		$gold = $this->getUserInfo("gold");
+		$gold = $this->gold;
 		if($gold + $num < 0){
 			throw new Exception("金币不足");
 		}else{
@@ -75,7 +77,7 @@ class User{
 	}
 	
 	public function changeEnergy($diff){
-		$energy = $this->getUserInfo("energy");
+		$energy = $this->energy;
 		if($energy + $diff < 0){
 			throw new Exception("体力不足");
 		}else{

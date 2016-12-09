@@ -15,7 +15,7 @@ class Soldier{
 	}
 
 	public function getSoldierInfo($info){
-		$sql = "select * from user_soldier where uid = '$this->uid' and soldier_id = '$this->soldier_id";
+		$sql = "select * from user_soldier where uid = '$this->owner' and soldier_id = '$this->id'";
 		$result = $this->con->query($sql);
 		return $result[0][$info];
 	}
@@ -26,6 +26,8 @@ class Soldier{
 				return $this->id;
 			case "uid":
 				return $this->owner;
+			default:
+				return $this->getSoldierInfo($property);
 		}
 	}
 	
@@ -33,7 +35,7 @@ class Soldier{
 		$con = MysqlConnect::getInstance();
 		$sql = "select * from user_soldier where uid = $uid && soldier_id = $soldier_id";
 		$result = $con->query($sql);
-		if(isset($result)){
+		if(!empty($result)){
 			return true;
 		}else{
 			return false;

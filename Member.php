@@ -13,7 +13,7 @@ class Member extends User{
 		if($result){
 			$soldiers = [];
 			foreach($result as $s){
-				$soldier = new Soldier($s['soldier_id'],$s['uid']);
+				$soldier = new DispatchedSoldier($s['soldier_id'],$s['uid']);
 				$soldiers[] = $soldier;
 			}
 			return $soldiers;
@@ -84,7 +84,7 @@ class Member extends User{
 	}
 	
 	public function dispatchSoldier($soldier_id){
-		$soldier = $this->getUserSoldierInfo($soldier_id);
+		$soldier = new Soldier($soldier_id,$this->uid);
 		$soldier_dispatched = $this->getSoldierDispatched();
 		if($soldier_dispatched){
 			foreach($soldier_dispatched as $k){
@@ -93,22 +93,19 @@ class Member extends User{
 				}
 			}
 		}
-		if(isset($soldier)){
-			$clan_id = $this->getUserClanInfo("clan_id");
-			$CE = $soldier['CE'];
-			$date = date("Y-m-d H:i:s",time());
-			$price = Util::soldierPrice($CE);
-			$sql = "insert into soldier_dispatched (uid,clan_id,soldier_id,time_send_out,CE,price) 
-					values ($this->uid,$clan_id,$soldier_id,'$date',$CE,$price)";
-			$result = $this->con->query($sql);
-		}else{
-			throw new Exception("Request denied: User do not have soldier ".$soldier_id);
-		}
+		$clan_id = $this->getUserClanInfo("clan_id");
+		$CE = $soldier->CE;
+		$level = $soldier->level;
+		$date = date("Y-m-d H:i:s",time());
+		$price = Util::soldierPrice($CE);
+		$sql = "insert into soldier_dispatched (uid,clan_id,soldier_id,time_dispatched,CE,price,level) 
+				values ($this->uid,$clan_id,$soldier_id,'$date',$CE,$price,$level)";
+		$result = $this->con->query($sql);
 	}
 	
 	public function employSoldier($soldier,$owner){
 		$date = date("Y-m-d H:i:s",time());
-		$this->changeGold($soldier->price);
+		$this->changeGold(-$soldier->price);
 		$sql = "insert into soldier_employed (uid,soldier_id,owner,time_employed) 
 										values ($this->uid,$soldier->id,$owner->uid,'$date')";
 		$this->con->query($sql);
@@ -116,6 +113,13 @@ class Member extends User{
 		if($soldier->employed_income < 200000){
 			$soldier->employed_income = $soldier->employed_income + ceil($soldier->price * 0.7);
 		}
+	}
+	
+	public function recallSoldier($soldier){
+		$income = Util::soldierIncome($soldier->time_dispatched, $soldier->employed_times, $soldier->price, $soldier->CE);
+		$this->changeGold($income);
+		$sql = "delete from soldier_dispatched where uid = $this->uid and soldier_id = $soldier->id";
+		$this->con->query($sql);
 	}
 }
 ?>

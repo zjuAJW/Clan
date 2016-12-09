@@ -35,7 +35,7 @@ class DispatchedSoldier extends Soldier{
 		$con = MysqlConnect::getInstance();
 		$sql = "select * from soldier_dispatched where uid = $uid && soldier_id = $soldier_id";
 		$result = $con->query($sql);
-		if(isset($result)){
+		if(!empty($result)){
 			return true;
 		}else{
 			return false;

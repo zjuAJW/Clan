@@ -8,7 +8,7 @@ require_once 'Util.php';
 require_once 'DispatchedSoldier.php';
 class ClanService{
 	public static function createClan($parameter){
-		if(ParaCheck::check($parameter, ["uid","clan_name","icon_id"])){
+		if(Util::checkParameter($parameter, ["uid","clan_name","icon_id"])){
 			$user = new User($parameter['uid']);
 			$clan_name = $parameter['clan_name'];
 			$icon_id = $parameter['icon_id'];
@@ -16,11 +16,8 @@ class ClanService{
 		if($user->getUserClanInfo('clan_id')!=null){
 			throw new Exception("Request denied: You have to quit your clan first");
 		}
-		if($user->getUserInfo('level')<LEVEL_TO_CREATE_CLAN){
+		if($user->level < LEVEL_TO_CREATE_CLAN){
 			throw new Exception("Request denied: You have to reach Lv".LEVEL_TO_CREATE_CLAN." to create a clan");
-		}
-		if($user->getUserInfo('diamond')<DIAMOND_TO_CREATE_CLAN){
-			throw new Exception("Request denied: Creating a clan needs at least ".DIAMOND_TO_CREATE_CLAN." diamond");
 		}
 		if(Clan::isClanExist($clan_name)){
 			throw new Exception("Request denied:Clan already exits, please change the clan name");
@@ -30,7 +27,7 @@ class ClanService{
 	}
 	
 	public static function quitClan($parameter){
-		if(ParaCheck::check($parameter, ["uid"])){
+		if(Util::checkParameter($parameter, ["uid"])){
 			$user = User::getInstance($parameter['uid']);
 		}
 		if($user->getUserClanInfo("clan_id") == null){
@@ -46,7 +43,7 @@ class ClanService{
 	}
 	
 	public static function joinClan($parameter){
-		if(ParaCheck::check($parameter, ['uid','clan_id'])){
+		if(Util::checkParameter($parameter, ['uid','clan_id'])){
 			$user = User::getInstance($parameter['uid']);
 			$clan_id = $parameter['clan_id'];
 		}
@@ -61,7 +58,7 @@ class ClanService{
 		if($clan->getClanInfo('member_num')>=MAX_CLAN_MEMBER_NUM){
 			throw new Exception("工会人数已满");
 		}
-		if($clan->getClanInfo('level_required') > $user->getUserInfo('level')){
+		if($clan->getClanInfo('level_required') > $user->level){
 			throw new Exception("你的战队等级低于加入该公会所需等级");
 		}
 		$quit_result = $user->getClanQuitRecord();
@@ -102,7 +99,7 @@ class ClanService{
 	
 	//TODO:还没有根据公会名查找的功能
 	public static function searchForClan($parameter){
-		if(ParaCheck::check($parameter, ["uid","clan_id"])){
+		if(Util::checkParameter($parameter, ["uid","clan_id"])){
 			$user = User::getInstance($parameter["uid"]);
 			$clan = new Clan($parameter["clan_id"]);
 		}
@@ -119,7 +116,7 @@ class ClanService{
 	}
 	
 	public static function acceptMember($parameter){
-		if(ParaCheck::check($parameter, ['uid','member_id','accept'])){
+		if(Util::checkParameter($parameter, ['uid','member_id','accept'])){
 				$user = User::getInstance($parameter['uid']);
 				$member = User::getInstance($parameter['member_id']);
 				$accept = $parameter['accept'];
@@ -158,7 +155,7 @@ class ClanService{
 	
 	//TODO：感觉这个函数写的有问题。。。。。。（每个拆开？工会名字好像应该判断一下到底有没有变过）
 	public static function clanSettings($parameter){
-		if(ParaCheck::check($parameter, ['uid','clan_name','icon_id','type','level_required'])){
+		if(Util::checkParameter($parameter, ['uid','clan_name','icon_id','type','level_required'])){
 			$user = User::getInstance($parameter['uid']);
 			$new_name = $parameter['clan_name'];
 			$icon_id = $parameter['icon_id'];
@@ -188,7 +185,7 @@ class ClanService{
 	}
 	
 	public static function changeNotice($parameter){
-		if(ParaCheck::check($parameter, ["uid","notice"])){
+		if(Util::checkParameter($parameter, ["uid","notice"])){
 			$user = User::getInstance($parameter["uid"]);
 			$notice = $parameter["notice"];
 		}
@@ -205,7 +202,7 @@ class ClanService{
 	}
 	
 	public static function checkMemberInfo($parameter){
-		if(ParaCheck::check($parameter, ["uid","member_id","info"])){
+		if(Util::checkParameter($parameter, ["uid","member_id","info"])){
 			$user = User::getInstance($parameter["uid"]);
 			$member = User::getInstance($parameter["member_id"]);
 			$info = $parameter["info"];
@@ -216,7 +213,7 @@ class ClanService{
 		}else{
 			$info_array = explode(',',$info);
 			if(in_array("time_last_log_in", $info_array)){
-				$result["time_last_log_in"] = $member->getUserInfo("time_last_log_in");
+				$result["time_last_log_in"] = $member->time_last_log_in;
 			}
 			if(in_array("contribution",$info_array)){
 				$result["contribution"] = $member->getUserClanInfo("contribution");
@@ -229,7 +226,7 @@ class ClanService{
 	}
 	
 	public static function setJob($parameter){
-		if(ParaCheck::check($parameter, ["uid","member_id","job"])){
+		if(Util::checkParameter($parameter, ["uid","member_id","job"])){
 			$user = User::getInstance($parameter["uid"]);
 			$member = User::getInstance($parameter["member_id"]);
 			$job = $parameter["job"];
@@ -266,7 +263,7 @@ class ClanService{
 	}
 	
 	public static function kickOutMember($parameter){
-		if(ParaCheck::check($parameter, ["uid","member_id"])){
+		if(Util::checkParameter($parameter, ["uid","member_id"])){
 			$user = User::getInstance($parameter["uid"]);
 			$member = User::getInstance($parameter["member_id"]);
 		}
@@ -285,7 +282,7 @@ class ClanService{
 	}
 	
 	public static function dissolveClan($parameter){
-		if(ParaCheck::check($parameter, ["uid"])){
+		if(Util::checkParameter($parameter, ["uid"])){
 			$user = User::getInstance($parameter["uid"]);
 		}
 		if(!($user instanceof Leader)){
@@ -299,7 +296,7 @@ class ClanService{
 	}
 	
 	public static function admire($parameter){
-		if(ParaCheck::check($parameter, ["uid","member_id","type"])){
+		if(Util::checkParameter($parameter, ["uid","member_id","type"])){
 			$user = User::getInstance($parameter["uid"]);
 			$member = User::getInstance($parameter["member_id"]);
 			$type = $parameter["type"];
@@ -310,10 +307,10 @@ class ClanService{
 		if($user->getUserClanInfo("clan_id") != $member->getUserClanInfo("clan_id")){
 			throw new Exception("Request denied: Two users are not in the same clan");
 		}
-		if($user->getUserInfo("level") >= $member->getUserInfo("level")){
+		if($user->level >= $member->level){
 			throw new Exception("Request denied: 只能膜拜比你等级高的玩家");
 		}
-		$vip_level = $user->getUserInfo("vip_level");
+		$vip_level = $user->vip_level;
 		$admire_num = $user->getUserClanInfo("admire_num");
 		if(($vip_level < 8 && $admire_num >= 1) || (8 <= $vip_level && $vip_level < 12 && $admire_num >= 2) || $admire_num >= 3){
 			throw new Exception("膜拜次数已用完");
@@ -327,7 +324,7 @@ class ClanService{
 	}
 	
 	public static function getAdmireReward($parameter){
-		if(ParaCheck::check($parameter, ["uid"])){
+		if(Util::checkParameter($parameter, ["uid"])){
 			$user = User::getInstance($parameter["uid"]);
 		}
 		if($user->getUserClanInfo("admire_reward_gold") <= 0){
@@ -339,7 +336,7 @@ class ClanService{
 	}
 	
 	public static function dispatchSoldier($parameter){
-		if(ParaCheck::check($parameter, ["uid","soldier_id"])){
+		if(Util::checkParameter($parameter, ["uid","soldier_id"])){
 			$user = User::getInstance($parameter["uid"]);
 			$soldier_id = $parameter["soldier_id"];
 		}
@@ -347,14 +344,14 @@ class ClanService{
 		if($clan_id == null){
 			throw new Exception("Request denied: Join a clan to send out soldiers");
 		}
-		$vip = $user->getUserInfo("vip_level");
+		$vip = $user->vip_level;
 		$soldier_dispatched = $user->getSoldierDispatched();
 		$dispatched_num = count($soldier_dispatched);
 		if(($vip<12 && $dispatched_num>=2) || ($vip>12 && $vip < 14 && $dispatched_num >= 3) || ($vip > 14 && $dispatched_num >= 4)){
 			throw new Exception("派出英雄已达上限");
 		}
 		$user->dispatchSoldier($soldier_id);
-		return "Soldier has been sent out";
+		return "Soldier has been dispatched";
 	}
 	
 	public static function employSoldier($parameter){
@@ -369,7 +366,7 @@ class ClanService{
 		if(!($user->getUserClanInfo("clan_id") == $owner->getUserClanInfo("clan_id"))){
 			throw new Exception("Request denied: You can only employ soldier from your own clan");
 		}
-		if($user->getUserInfo("level") < $soldier->level){
+		if($user->level < $soldier->level){
 			throw new Exception("Request denied: You can only employ soldier whose level is lower than you");
 		}
 		$employed_soldier = $user->getEmployedSoldier();
@@ -382,7 +379,26 @@ class ClanService{
 		}
 		$user->employSoldier($soldier,$owner);
 		return "Employ successfully";
-		
 	}
+	
+	public static function recallSoldier($parameter){
+		if(Util::checkParameter($parameter, ["uid","soldier_id"])){
+			$user = User::getInstance($parameter["uid"]);
+			$soldier = new DispatchedSoldier($parameter["soldier_id"],$parameter["uid"]);
+		}
+		$time_dispatched = strtotime($soldier->time_dispatched);
+		$timeDiff = (time()-$time_dispatched);
+		if($timeDiff/3600 < 0.5){
+			$timeRequire = 0.5*3600-$timeDiff;
+			$m = floor($timeRequire/60);
+			$s = floor($timeRequire%60);
+			throw new Exception("该英雄还有".$m ."分钟".$s."秒才能归队");
+		}else{
+			$user->recallSoldier($soldier);
+		}
+		return "Recall successfully";
+	}
+	
+	
 }
 ?>

@@ -6,6 +6,9 @@ require_once 'CONSTANT.php';
 require_once 'ParaCheck.php';
 require_once 'Util.php';
 require_once 'DispatchedSoldier.php';
+
+
+//很多if-else，能改善吗？
 class ClanService{
 	public static function createClan($parameter){
 		if(Util::checkParameter($parameter, ["uid","clan_name","icon_id"])){
@@ -399,6 +402,27 @@ class ClanService{
 		return "Recall successfully";
 	}
 	
+	public static function startClanInstance($parameter){
+		if(Util::checkParameter($parameter, ["uid","primary_id"])){
+			$user = User::getInstance($parameter["uid"]);
+			$primary_id = $parameter["primary_id"];
+		}
+		if(!($user instanceof Leader || $user instanceof Elder)){
+			throw new Exception("Request denied: Only leader of elder can satrt instance");
+		}
+		$clan_id = $user->getUserClanInfo("clan_id");
+		$clan = new Clan($clan_id);
+		$finished_instance = $clan->getFinishedInstance();
+		$instance_in_process = $clan->getInstanceInProcess();
+		if((empty($finished_instance) && $primary_id != 1) || (!empty($finished_instance) && $finished_instance[0]["primary_id"] < $primary_id - 1)){
+			throw new Exception("通关前面的关卡来解锁当前关卡");
+		}
+		if(!empty($instance_in_process) && $instance_in_process[0]["primary_id"] == $primary_id){
+			throw new Exception("关卡已开通");
+		}
+		$result = $user->startClanInstance($primary_id);
+		return $result;
+	}
 	
 }
 ?>

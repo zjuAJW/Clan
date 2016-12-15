@@ -121,5 +121,17 @@ class Clan{
 		$this->con->query($sql);
 	}
 	
+	public function getFinishedInstance(){
+		$sql = "select * from clan_instance_finished where clan_id = $this->clan_id";
+		$result = $this->con->query($sql);
+		return $result;
+	}
+	
+	public function getInstanceInProcess(){
+		$sql = "select * from clan_instance_in_process where clan_id = $this->clan_id";
+		$result = $this->con->query($sql);
+		return $result;
+	}
+	
 }
 ?>

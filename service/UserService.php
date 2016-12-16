@@ -1,6 +1,6 @@
 <?php
-require_once dirname(__FILE__)."/entity/User.php";
-require_once dirname(__FILE__)."/paraCheck.php";
+require_once dirname(dirname(__FILE__))."/entity/User.php";
+require_once dirname(dirname(__FILE__))."/paraCheck.php";
 class UserService{
 	public static function register($parameter){
 		if(ParaCheck::check($parameter, ["username","password","nickname"])){

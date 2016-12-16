@@ -1,5 +1,5 @@
 <?php
-require_once 'JsonHandler.php';
+require_once dirname(dirname(__FILE__))."/lib/JsonHandler.php";
 class gateWay{
 	protected $acceptEncoding,$contentType,$rawInputdata,$contentEncoding;
 	protected $rawOutputData;
@@ -36,8 +36,17 @@ class gateWay{
 			$this->rawOutputData = JsonHandler::handleRequest($data);
 			//echo $this->rawOutputData;
 			$this->rawOutputData = JsonHandler::serializeData($this->rawOutputData);
-		}catch(Exception $e){
+		}
+// 		catch (MyException $e){
+// 			....
+// 		}catch (MySqlException $e){
+// 			....
+// 		}catch (WebEx...){
+			
+// 		}
+		catch(Exception $e){
 			$this->rawOutputData = JsonHandler::handleException($e);
+			$this->rawOutputData = JsonHandler::serializeData($this->rawOutputData);
 		}
 	}
 	

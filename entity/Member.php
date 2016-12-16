@@ -1,8 +1,8 @@
 <?php
-require_once 'MysqlConnect.php';
-require_once 'User.php';
-require_once 'Util.php';
-require_once 'Soldier.php';
+require_once dirname(dirname(__FILE__))."/lib/MysqlConnect.php";
+require_once dirname(dirname(__FILE__))."/util/Util.php";
+require_once dirname(__FILE__).'/User.php';
+require_once dirname(__FILE__).'/Soldier.php';
 class Member extends User{
 	//protected $con = MysqlConnect::getInstance();
 	//构造函数

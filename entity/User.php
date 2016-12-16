@@ -1,5 +1,5 @@
 <?php
-require_once 'MysqlConnect.php';
+require_once dirname(dirname(__FILE__))."/lib/MysqlConnect.php";
 class User{
 	protected $uid;
 	protected $con;

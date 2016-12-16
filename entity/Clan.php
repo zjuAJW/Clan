@@ -1,9 +1,9 @@
 <?php
-require_once 'MysqlConnect.php';
-require_once 'CONSTANT.php';
-require_once 'Member.php';
-require_once 'Leader.php';
-require_once 'Elder.php';
+require_once dirname(dirname(__FILE__))."/lib/MysqlConnect.php";
+require_once dirname(dirname(__FILE__))."/constant/CONSTANT.php";
+require_once dirname(__FILE__).'/Member.php';
+require_once dirname(__FILE__).'/Leader.php';
+require_once dirname(__FILE__).'/Elder.php';
 class Clan{
 	protected $clan_id;
 	protected $con;

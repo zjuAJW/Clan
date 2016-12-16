@@ -3,7 +3,7 @@ class MysqlConnect{
 	private $con;
 	private static $instance;
 	private function __construct(){
-		require_once 'db_info.php';
+		require_once dirname(dirname(__FILE__	)).'/config/db_info.php';
 		$this->con=mysqli_connect($DB_INFO["host"],$DB_INFO["username"],$DB_INFO["password"],$DB_INFO['database']);
 		if(!$this->con){
 			throw new Exception("Database connection Failed: " . $this->con->connect_error);

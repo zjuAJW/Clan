@@ -1,5 +1,5 @@
 <?php
-require_once 'Service.php';
+require_once dirname(dirname(__FILE__))."/service/Service.php";
 class JsonHandler{
 	public static function deserializeRequest($rawInputData){
 		//echo $rawInputData;
@@ -14,6 +14,7 @@ class JsonHandler{
 	 
 	
 	public static function handleRequest($data){
+		$responses = array();
 		if(empty($data['serviceName'])){
 			throw new Exception("Request Syndax Error: No service name");
 		}
@@ -27,7 +28,9 @@ class JsonHandler{
 		$parameter = $data['parameter'];
 		$methodName = $data['methodName'];
 		$response = Service::executeService($serviceName,$methodName,$parameter);
-		return $response;
+		$responses["CODE"] = 0;
+		$responses["DATA"] = $response;
+		return $responses;
 	}
 	
 	public static function serializeData($data){
@@ -35,7 +38,10 @@ class JsonHandler{
 	}
 	
 	public static function handleException($e){
-		return $e->getMessage();
+		$responses = array();
+		$responses["CODE"] = $e->getCode();
+		$responses["MESSAGE"] = $e->getMessage();
+		return $responses;
 	}
 	
 }

@@ -1,16 +1,14 @@
 <?php
-require_once 'User.php';
-require_once 'Member.php';
-require_once 'Clan.php';
-require_once 'CONSTANT.php';
-require_once 'ParaCheck.php';
-require_once 'Util.php';
-require_once 'DispatchedSoldier.php';
+require_once dirname(dirname(__FILE__))."/entity/User.php";
+require_once dirname(dirname(__FILE__))."/entity/Member.php";
+require_once dirname(dirname(__FILE__))."/entity/Clan.php";
+require_once dirname(dirname(__FILE__))."/constant/CONSTANT.php";
+require_once dirname(dirname(__FILE__))."/util/Util.php";
+require_once dirname(dirname(__FILE__))."/entity/DispatchedSoldier.php";
 
 
-//很多if-else，能改善吗？
 class ClanService{
-	public static function createClan($parameter){
+	public function createClan($parameter){
 		if(Util::checkParameter($parameter, ["uid","clan_name","icon_id"])){
 			$user = new User($parameter['uid']);
 			$clan_name = $parameter['clan_name'];
@@ -29,7 +27,7 @@ class ClanService{
 		return "Create clan successfully";
 	}
 	
-	public static function quitClan($parameter){
+	public function quitClan($parameter){
 		if(Util::checkParameter($parameter, ["uid"])){
 			$user = User::getInstance($parameter['uid']);
 		}
@@ -45,7 +43,7 @@ class ClanService{
 		return "Quit Clan successfully";
 	}
 	
-	public static function joinClan($parameter){
+	public function joinClan($parameter){
 		if(Util::checkParameter($parameter, ['uid','clan_id'])){
 			$user = User::getInstance($parameter['uid']);
 			$clan_id = $parameter['clan_id'];
@@ -84,8 +82,6 @@ class ClanService{
 				}else if($quit_result[$i]['kickout'] == 0){
 					if($timeDiff/3600 < 1){
 						$timeRequire = 3600-$timeDiff;
-						//$d = floor($timeRequire/86400);
-						//$h = floor($timeRequire%86400/3600);
 						$m = floor($timeRequire/60);
 						$s = floor($timeRequire%60);
 						throw new Exception("无法在退出公会1小时内加入任何公会，再过".$m ."分钟".$s."秒后才可选择加入公会");
@@ -101,7 +97,7 @@ class ClanService{
 	}
 	
 	//TODO:还没有根据公会名查找的功能
-	public static function searchForClan($parameter){
+	public function searchForClan($parameter){
 		if(Util::checkParameter($parameter, ["uid","clan_id"])){
 			$user = User::getInstance($parameter["uid"]);
 			$clan = new Clan($parameter["clan_id"]);
@@ -157,7 +153,7 @@ class ClanService{
 	
 	
 	//TODO：感觉这个函数写的有问题。。。。。。（每个拆开？工会名字好像应该判断一下到底有没有变过）
-	public static function clanSettings($parameter){
+	public function clanSettings($parameter){
 		if(Util::checkParameter($parameter, ['uid','clan_name','icon_id','type','level_required'])){
 			$user = User::getInstance($parameter['uid']);
 			$new_name = $parameter['clan_name'];
@@ -187,7 +183,7 @@ class ClanService{
 		}
 	}
 	
-	public static function changeNotice($parameter){
+	public function changeNotice($parameter){
 		if(Util::checkParameter($parameter, ["uid","notice"])){
 			$user = User::getInstance($parameter["uid"]);
 			$notice = $parameter["notice"];
@@ -204,7 +200,7 @@ class ClanService{
 		}
 	}
 	
-	public static function checkMemberInfo($parameter){
+	public function checkMemberInfo($parameter){
 		if(Util::checkParameter($parameter, ["uid","member_id","info"])){
 			$user = User::getInstance($parameter["uid"]);
 			$member = User::getInstance($parameter["member_id"]);
@@ -228,7 +224,7 @@ class ClanService{
 		}
 	}
 	
-	public static function setJob($parameter){
+	public function setJob($parameter){
 		if(Util::checkParameter($parameter, ["uid","member_id","job"])){
 			$user = User::getInstance($parameter["uid"]);
 			$member = User::getInstance($parameter["member_id"]);
@@ -265,7 +261,7 @@ class ClanService{
 		}
 	}
 	
-	public static function kickOutMember($parameter){
+	public function kickOutMember($parameter){
 		if(Util::checkParameter($parameter, ["uid","member_id"])){
 			$user = User::getInstance($parameter["uid"]);
 			$member = User::getInstance($parameter["member_id"]);
@@ -284,7 +280,7 @@ class ClanService{
 		}
 	}
 	
-	public static function dissolveClan($parameter){
+	public function dissolveClan($parameter){
 		if(Util::checkParameter($parameter, ["uid"])){
 			$user = User::getInstance($parameter["uid"]);
 		}
@@ -298,7 +294,7 @@ class ClanService{
 		}
 	}
 	
-	public static function admire($parameter){
+	public function admire($parameter){
 		if(Util::checkParameter($parameter, ["uid","member_id","type"])){
 			$user = User::getInstance($parameter["uid"]);
 			$member = User::getInstance($parameter["member_id"]);
@@ -326,7 +322,7 @@ class ClanService{
 		return "Admire successfully";
 	}
 	
-	public static function getAdmireReward($parameter){
+	public function getAdmireReward($parameter){
 		if(Util::checkParameter($parameter, ["uid"])){
 			$user = User::getInstance($parameter["uid"]);
 		}
@@ -338,7 +334,7 @@ class ClanService{
 		}
 	}
 	
-	public static function dispatchSoldier($parameter){
+	public function dispatchSoldier($parameter){
 		if(Util::checkParameter($parameter, ["uid","soldier_id"])){
 			$user = User::getInstance($parameter["uid"]);
 			$soldier_id = $parameter["soldier_id"];
@@ -357,7 +353,8 @@ class ClanService{
 		return "Soldier has been dispatched";
 	}
 	
-	public static function employSoldier($parameter){
+	public function employSoldier($parameter){
+		
 		if(Util::checkParameter($parameter, ["uid","soldier_id","owner"])){
 			$owner = User::getInstance($parameter["owner"]);
 			$user = User::getInstance($parameter['uid']);
@@ -384,7 +381,7 @@ class ClanService{
 		return "Employ successfully";
 	}
 	
-	public static function recallSoldier($parameter){
+	public function recallSoldier($parameter){
 		if(Util::checkParameter($parameter, ["uid","soldier_id"])){
 			$user = User::getInstance($parameter["uid"]);
 			$soldier = new DispatchedSoldier($parameter["soldier_id"],$parameter["uid"]);
@@ -402,7 +399,7 @@ class ClanService{
 		return "Recall successfully";
 	}
 	
-	public static function startClanInstance($parameter){
+	public function startClanInstance($parameter){
 		if(Util::checkParameter($parameter, ["uid","primary_id"])){
 			$user = User::getInstance($parameter["uid"]);
 			$primary_id = $parameter["primary_id"];
@@ -424,5 +421,15 @@ class ClanService{
 		return $result;
 	}
 	
+	public function applicateForTrophy($parameter){
+		if(Util::checkParameter($parameter, ["uid","trophy_id"])){
+			$user = User::getInstance($parameter["uid"]);
+			$trophy_id = $parameter["trophy_id"];
+		}
+		$clan_id = $user->getUserInfo("clan_id");
+		if(!isset($clan_id)){
+			throw new Exception("Request denied:User not in any clan");
+		}
+	}
 }
 ?>

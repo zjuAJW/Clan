@@ -1,6 +1,6 @@
 <?php
-require_once 'MysqlConnect.php';
-require 'Clan.php';
+require_once 'lib/MysqlConnect.php';
+require 'entity/Clan.php';
 //require 'Member.php';
 
 // $con = MysqlConnect::getInstance();

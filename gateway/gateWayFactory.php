@@ -1,5 +1,5 @@
 <?php
-require_once 'gateWay.php';
+require_once 'GateWay.php';
 class gateWayFactory{
 	protected static function getRawInputData(){
 		return file_get_contents("php://input");

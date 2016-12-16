@@ -9,3 +9,11 @@ define("CLAN_MEMBER",3);
 define("FREE_ADMIRE",1);
 define("GOLD_ADMIRE",2);
 define("DIAMOND_ADMIRE",3);
+
+class UserConstants{
+	const INIT_ID = 3;
+}
+
+class ClanConstants{
+	const ALL_SOLDIER_ID = -1;
+}

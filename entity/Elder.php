@@ -1,5 +1,5 @@
 <?php
-require_once 'Member.php';
+require_once dirname(__FILE__).'/Member.php';
 class Elder extends Member{
 	public function startClanInstance($primary_id){
 		$clan_id = $this->getUserClanInfo("clan_id");

@@ -9,13 +9,8 @@ class Clan{
 	protected $con;
 	
 	public function __construct($clan_id){
-		if(!self::isClanExist($clan_id)){
-			//echo($clan_name);
-			throw new Exception("No such Clan");
-		}else{
 			$this->clan_id = $clan_id;
 			$this->con = MysqlConnect::getInstance();
-		}
 	}
 	
 	public function getClanInfo($info){

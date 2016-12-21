@@ -1,4 +1,5 @@
 <?php
+require_once dirname(dirname(__FILE__))."/constant/MysqlException.php";
 class MysqlConnect{
 	private $con;
 	private static $instance;
@@ -6,7 +7,7 @@ class MysqlConnect{
 		require_once dirname(dirname(__FILE__	)).'/config/db_info.php';
 		$this->con=mysqli_connect($DB_INFO["host"],$DB_INFO["username"],$DB_INFO["password"],$DB_INFO['database']);
 		if(!$this->con){
-			throw new Exception("Database connection Failed: " . $this->con->connect_error);
+			throw new MysqlException("Database connection Failed: " . $this->con->connect_error);
 		}
 		else{
 			mysqli_query($this->con,"set names 'utf8' ");

@@ -20,6 +20,6 @@ class gateWayFactory{
 		}
 		$rawInputData = self::getRawInputData();
 		return new gateWay($acceptEncoding, $contentType, $rawInputData,$contentEncoding);
-	} 
+	}
 }
 ?>

@@ -3,6 +3,7 @@ require_once dirname(dirname(__FILE__))."/entity/User.php";
 require_once dirname(dirname(__FILE__))."/entity/Member.php";
 require_once dirname(dirname(__FILE__))."/entity/Clan.php";
 require_once dirname(dirname(__FILE__))."/constant/CONSTANT.php";
+require_once dirname(dirname(__FILE__))."/constant/ClanException.php";
 require_once dirname(dirname(__FILE__))."/util/Util.php";
 require_once dirname(dirname(__FILE__))."/entity/DispatchedSoldier.php";
 
@@ -15,13 +16,14 @@ class ClanService{
 			$icon_id = $parameter['icon_id'];
 		}
 		if($user->getUserClanInfo('clan_id')!=null){
-			throw new Exception("Request denied: You have to quit your clan first");
+			throw new ClanException("Request denied: You have to quit your clan first",ClanException::ILLEGAL_OPERATION);
 		}
 		if($user->level < LEVEL_TO_CREATE_CLAN){
-			throw new Exception("Request denied: You have to reach Lv".LEVEL_TO_CREATE_CLAN." to create a clan");
+			throw new ClanException("Request denied: You have to reach Lv".LEVEL_TO_CREATE_CLAN." to create a clan",
+																						ClanException::ILLEGAL_OPERATION);
 		}
 		if(Clan::isClanExist($clan_name)){
-			throw new Exception("Request denied:Clan already exits, please change the clan name");
+			throw new CLanException("Request denied:Clan already exits, please change the clan name",ClanException::ILLEGAL_OPERATION);
 		}
 		Clan::createClan($clan_name, $user, $icon_id);
 		return "Create clan successfully";
@@ -32,12 +34,17 @@ class ClanService{
 			$user = User::getInstance($parameter['uid']);
 		}
 		if($user->getUserClanInfo("clan_id") == null){
-			throw new Exception("User is not in any clan");
+			throw new ClanException("User is not in any clan",ClanException::ILLEGAL_OPERATION);
 		}
 		if($user instanceof Leader){
-			throw new Exception("Leader of clan cannot quit");
+			throw new ClanException("Leader of clan cannot quit",ClanException::ILLEGAL_OPERATION);
 		}
-		$clan = new Clan($user->getUserClanInfo('clan_id'));
+		$clan_id = $user->getUserClanInfo('clan_id');
+		if(Clan::isClanExist($clan_id)){
+			$clan = new Clan($user->getUserClanInfo('clan_id'));
+		}else{
+			throw new ClanException("Clan do not exist", ClanException::CLAN_DO_NOT_EXIST);
+		}
 		$user->addClanQuitRecord(0);
 		$clan->deleteMember($user);
 		return "Quit Clan successfully";
@@ -49,18 +56,18 @@ class ClanService{
 			$clan_id = $parameter['clan_id'];
 		}
 		if($user->getUserClanInfo("clan_id")!=null){
-			throw new Exception("不能同时加入两个工会，请先退出现在的工会");
+			throw new ClanException("不能同时加入两个工会，请先退出现在的工会",ClanException::ILLEGAL_OPERATION);
 		}
 		if(!Clan::isClanExist($clan_id)){
-			throw new Exception("工会不存在");
+			throw new CLanException("工会不存在",ClanException::CLAN_DO_NOT_EXIST);
 		}else{
 			$clan = new Clan($clan_id);
 		}
 		if($clan->getClanInfo('member_num')>=MAX_CLAN_MEMBER_NUM){
-			throw new Exception("工会人数已满");
+			throw new ClanException("工会人数已满",ClanException::CLAN_IS_FULL);
 		}
 		if($clan->getClanInfo('level_required') > $user->level){
-			throw new Exception("你的战队等级低于加入该公会所需等级");
+			throw new ClanException("你的战队等级低于加入该公会所需等级",ClanException::ILLEGAL_OPERATION);
 		}
 		$quit_result = $user->getClanQuitRecord();
 		if(count($quit_result)!=0){
@@ -75,7 +82,8 @@ class ClanService{
 						$h = floor($timeRequire%86400/3600);
 						$m = floor($timeRequire%86400%3600/60);
 						$s = floor($timeRequire%86400%3600%60);
-						throw new Exception("无法在退出公会48小时内加入同个公会，再过".$d."天".$h."小时" .$m ."分钟".$s."秒后才可加入该公会");
+						throw new ClanException("无法在退出公会48小时内加入同个公会，再过".$d."天".$h."小时" .$m ."分钟".$s."秒后才可加入该公会",
+																								ClanException::ILLEGAL_OPERATION);
 					}else{
 						$user->deletClanQuitRecord($clan_id);
 					}
@@ -84,7 +92,7 @@ class ClanService{
 						$timeRequire = 3600-$timeDiff;
 						$m = floor($timeRequire/60);
 						$s = floor($timeRequire%60);
-						throw new Exception("无法在退出公会1小时内加入任何公会，再过".$m ."分钟".$s."秒后才可选择加入公会");
+						throw new ClanException("无法在退出公会1小时内加入任何公会，再过".$m ."分钟".$s."秒后才可选择加入公会",ClanException::ILLEGAL_OPERATION);
 					}
 				}else if($timeDiff/3600 >= 48){
 					$clan_id_i = $quit_result[$i]['clan_id'];
@@ -100,7 +108,12 @@ class ClanService{
 	public function searchForClan($parameter){
 		if(Util::checkParameter($parameter, ["uid","clan_id"])){
 			$user = User::getInstance($parameter["uid"]);
-			$clan = new Clan($parameter["clan_id"]);
+			$clan_id = $parameter["clan_id"];
+			if(Clan::isClanExist($clan_id)){
+				$clan = new Clan($parameter["clan_id"]);
+			}else{
+				throw new ClanException("Clan do not exist",ClanException::CLAN_DO_NOT_EXIST);
+			}
 		}
 		if($clan){
 			$result = $clan->getClanInfo('all');
@@ -110,7 +123,7 @@ class ClanService{
 			}
 			return $info;
 		}else{
-			throw new Exception("你查找的公会不存在");
+			throw new ClanException("你查找的公会不存在",ClanException::CLAN_DO_NOT_EXIST);
 		}
 	}
 	
@@ -126,13 +139,17 @@ class ClanService{
 			$clan_job = $user->getUserClanInfo('clan_job');
 		}
 		if(!($clan_job == CLAN_LEADER || $clan_job == CLAN_ELDER)){
-			throw new Exception("Request denied: Only leader or elder can accept member");
+			throw new ClanException("Request denied: Only leader or elder can accept member",ClanException::PERMISSION_DENIED);
 		}
 		$clan_id = $user->getUserClanInfo("clan_id");
 		if(!($member->getClanJoinRecord($clan_id))){
 			throw new Exception("No such request");
 		}
-		$clan = new Clan($clan_id);
+		if(Clan::isClanExist($clan_id)){
+			$clan = new Clan($clan_id);
+		}else{
+			throw new ClanException("Clan do not exist", ClanException::CLAN_DO_NOT_EXIST);
+		}
 		if($accept){
 			if($member == null){
 				throw new Exception('No such user');
@@ -141,7 +158,7 @@ class ClanService{
 				throw new Exception("Request denied: The player has already been in a clan");
 			}
 			if($clan->getClanInfo("member_num")>=MAX_CLAN_MEMBER_NUM){
-				throw new Exception("Request denied: The number of clan member is max");
+				throw new ClanException("Request denied: Clan is full",ClanException::CLAN_IS_FULL);
 			}
 			$clan->addMember($member);
 			return ("Accept successfully!");
@@ -162,10 +179,14 @@ class ClanService{
 			$level_required = $parameter['level_required'];
 		}
 		if(!$user instanceof Leader){
-			throw new Exception("Request denied: Only the leader can change settings");
+			throw new ClanException("Request denied: Only the leader can change settings",ClanException::PERMISSION_DENIED);
 		}else{
 			$clan_id = $user->getUserClanInfo("clan_id");
-			$clan = new Clan($clan_id);
+			if(Clan::isClanExist($clan_id)){
+				$clan = new Clan($clan_id);
+			}else{
+				throw new ClanException("Clan do not exist",ClanException::CLAN_DO_NOT_EXIST);
+			}
 			if(!empty($new_name)){
 				$user->changeDiamond(-500);
 				$clan->changeClanName($new_name);
@@ -189,10 +210,14 @@ class ClanService{
 			$notice = $parameter["notice"];
 		}
 		if(!($user instanceof Leader || $user instanceof Elder)){
-			throw new Exception("Request denied: Only Leader or Elder can modify the motice");
+			throw new ClanException("Request denied: Only Leader or Elder can modify the motice",ClanException::PERMISSION_DENIED);
 		}else{
 			$clan_id = $user->getUserClanInfo("clan_id");
-			$clan = new Clan($clan_id);
+			if(Clan::isClanExist($clan_id)){
+				$clan = new Clan($clan_id);
+			}else{
+				throw new ClanException("Clan do not exist",ClanException::CLAN_DO_NOT_EXIST);
+			}
 			$result = $clan->changeNotice($notice);
 			if($result){
 				return "Notice Changed";
@@ -208,7 +233,7 @@ class ClanService{
 			$result = [];
 		}
 		if(!$user instanceof Leader){
-			throw new Exception("Request denied: Only the leader can check member info");
+			throw new ClanException("Request denied: Only the leader can check member info",ClanException::PERMISSION_DENIED);
 		}else{
 			$info_array = explode(',',$info);
 			if(in_array("time_last_log_in", $info_array)){
@@ -231,12 +256,16 @@ class ClanService{
 			$job = $parameter["job"];
 		}
 		if(!$user instanceof Leader){
-			throw new Exception("Request denied: Only Leader can change the job");
+			throw new ClanException("Request denied: Only Leader can change the job",ClanException::PERMISSION_DENIED);
 		}else if($parameter["uid"] == $parameter["member_id"]){
 			throw new Exception("You can't change your own job");
 		}else{
 			$clan_id = $user->getUserClanInfo("clan_id");
-			$clan = new Clan($clan_id);
+			if(Clan::isClanExist($clan_id)){
+				$clan = new Clan($clan_id);
+			}else{
+				throw new ClanException("Clan do not exist",ClanException::CLAN_DO_NOT_EXIST);
+			}
 			if(!($member->getUserClanInfo("clan_id") == $clan_id)){
 				throw new Exception("Request denied: member not in clan");
 			}else{
@@ -267,10 +296,14 @@ class ClanService{
 			$member = User::getInstance($parameter["member_id"]);
 		}
 		if(!($user instanceof Leader)){
-			throw new Exception("Request denied: Only Leader can kick out member");
+			throw new ClanException("Request denied: Only Leader can kick out member",ClanException::PERMISSION_DENIED);
 		}
 		$clan_id = $user->getUserClanInfo("clan_id");
-		$clan = new Clan($clan_id);
+		if(Clan::isClanExist($clan_id)){
+			$clan = new Clan($clan_id);
+		}else{
+			throw new ClanException("Clan do not exist",ClanException::CLAN_DO_NOT_EXIST);
+		}
 		if(!($member->getUserClanInfo("clan_id") == $clan_id)){
 			throw new Exception("Request denied: member not in clan");
 		}else{
@@ -285,10 +318,14 @@ class ClanService{
 			$user = User::getInstance($parameter["uid"]);
 		}
 		if(!($user instanceof Leader)){
-			throw new Exception("Request denied: Only Leader can dissolve clan");
+			throw new ClanException("Request denied: Only Leader can dissolve clan",ClanException::PERMISSION_DENIED);
 		}else{
 			$clan_id = $user->getUserClanInfo("clan_id");
-			$clan = new Clan($clan_id);
+			if(Clan::isClanExist($clan_id)){
+				$clan = new Clan($clan_id);
+			}else{
+				throw new ClanException("Clan do not exist",ClanException::CLAN_DO_NOT_EXIST);
+			}
 			$clan->dissolve();
 			return "Clan has been dissoved";
 		}
@@ -304,7 +341,7 @@ class ClanService{
 			throw new Exception("不能自己膜拜自己......");
 		}
 		if($user->getUserClanInfo("clan_id") != $member->getUserClanInfo("clan_id")){
-			throw new Exception("Request denied: Two users are not in the same clan");
+			throw new ClanException("Request denied: Two users are not in the same clan",ClanException::ILLEGAL_OPERATION);
 		}
 		if($user->level >= $member->level){
 			throw new Exception("Request denied: 只能膜拜比你等级高的玩家");
@@ -408,7 +445,11 @@ class ClanService{
 			throw new Exception("Request denied: Only leader of elder can satrt instance");
 		}
 		$clan_id = $user->getUserClanInfo("clan_id");
-		$clan = new Clan($clan_id);
+		if(Clan::isClanExist($clan_id)){
+			$clan = new Clan($clan_id);
+		}else{
+			throw new ClanException("Clan do not exist",ClanException::CLAN_DO_NOT_EXIST);
+		}
 		$finished_instance = $clan->getFinishedInstance();
 		$instance_in_process = $clan->getInstanceInProcess();
 		if((empty($finished_instance) && $primary_id != 1) || (!empty($finished_instance) && $finished_instance[0]["primary_id"] < $primary_id - 1)){

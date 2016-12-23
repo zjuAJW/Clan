@@ -6,6 +6,7 @@ require_once dirname(dirname(__FILE__))."/constant/CONSTANT.php";
 require_once dirname(dirname(__FILE__))."/constant/ClanException.php";
 require_once dirname(dirname(__FILE__))."/util/Util.php";
 require_once dirname(dirname(__FILE__))."/entity/DispatchedSoldier.php";
+require_once dirname(__DIR__)."/lib/Redis/RedisClan.php";
 
 
 class ClanService{
@@ -33,7 +34,8 @@ class ClanService{
 		if(Util::checkParameter($parameter, ["uid"])){
 			$user = User::getInstance($parameter['uid']);
 		}
-		if($user->getUserClanInfo("clan_id") == null){
+		$clan_id = $user->getUserClanInfo("clan_id");
+		if($clan_id == null){
 			throw new ClanException("User is not in any clan",ClanException::ILLEGAL_OPERATION);
 		}
 		if($user instanceof Leader){
@@ -45,7 +47,9 @@ class ClanService{
 		}else{
 			throw new ClanException("Clan do not exist", ClanException::CLAN_DO_NOT_EXIST);
 		}
+		$date = date("Y:m:d h:i:s",time());
 		$user->addClanQuitRecord(0);
+		RedisClan::redisSetQuitClanTime($user->uid, $clan_id, $date);
 		$clan->deleteMember($user);
 		return "Quit Clan successfully";
 	}
@@ -69,6 +73,8 @@ class ClanService{
 		if($clan->getClanInfo('level_required') > $user->level){
 			throw new ClanException("你的战队等级低于加入该公会所需等级",ClanException::ILLEGAL_OPERATION);
 		}
+		
+		/*******************Mysql 实现****************************/
 		$quit_result = $user->getClanQuitRecord();
 		if(count($quit_result)!=0){
 			for($i = 0;$i<count($quit_result);$i++){
@@ -100,6 +106,25 @@ class ClanService{
 				}
 			}
 		}
+		
+		/*********************Redis实现***************************/
+		$timeRequire = RedisClan::redisGetQuitClanTime($user->uid, $clan_id);
+		if($timeRequire[0] > 0){
+			$d = floor($timeRequire[0]/86400);
+			$h = floor($timeRequire[0]%86400/3600);
+			$m = floor($timeRequire[0]%86400%3600/60);
+			$s = floor($timeRequire[0]%86400%3600%60);
+			throw new ClanException("无法在退出公会48小时内加入同个公会，再过".$d."天".$h."小时" .$m ."分钟".$s."秒后才可加入该公会",
+																			ClanException::ILLEGAL_OPERATION);
+		}else if ($timeRequire[1] > 0){
+			$timeRequire = 3600-$timeDiff;
+			$m = floor($timeRequire/60);
+			$s = floor($timeRequire%60);
+			throw new ClanException("无法在退出公会1小时内加入任何公会，再过".$m ."分钟".$s."秒后才可选择加入公会",
+															ClanException::ILLEGAL_OPERATION);
+		}
+		
+		
 		$user->addClanJoinRecord($clan_id);
 		return("Application is successful, awaiting approval.");
 	}

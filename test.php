@@ -1,10 +1,9 @@
 <?php
-require_once dirname(__FILE__).'/lib/MysqlConnect.php';
-require_once dirname(__FILE__).'/entity/Clan.php';
-//require 'Member.php';
+require_once __DIR__ . "/lib/RedisConnect.php";
+require_once __DIR__ . "/config/redis_config.php";
+$redis = getRedisConnection();
+$test = $redis->get("test");
+echo $test;
 
-$con = MysqlConnect::getInstance();
-$sql = "select * from user where uid = 1";
-$result = $con->query($sql);
-var_dump($result);
+
 ?>

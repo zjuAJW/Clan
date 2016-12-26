@@ -34,7 +34,10 @@ class JsonHandler{
 	}
 	
 	public static function serializeData($data){
-		return json_encode($data);
+		foreach($data as $key=>$value){
+			$data[$key] = urlencode($value);
+		}
+		return urldecode(json_encode($data));
 	}
 	
 	public static function handleException($e){

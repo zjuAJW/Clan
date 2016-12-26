@@ -16,4 +16,5 @@ class UserConstants{
 
 class ClanConstants{
 	const ALL_SOLDIER_ID = -1;
+	const ALL_CLAN_ID = -1;
 }

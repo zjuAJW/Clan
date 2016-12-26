@@ -21,7 +21,7 @@ class ClanService{
 		}
 		if($user->level < LEVEL_TO_CREATE_CLAN){
 			throw new ClanException("Request denied: You have to reach Lv".LEVEL_TO_CREATE_CLAN." to create a clan",
-																						ClanException::ILLEGAL_OPERATION);
+																				ClanException::ILLEGAL_OPERATION);
 		}
 		if(Clan::isClanExist($clan_name)){
 			throw new CLanException("Request denied:Clan already exits, please change the clan name",ClanException::ILLEGAL_OPERATION);
@@ -48,8 +48,8 @@ class ClanService{
 			throw new ClanException("Clan do not exist", ClanException::CLAN_DO_NOT_EXIST);
 		}
 		$date = date("Y:m:d h:i:s",time());
-		$user->addClanQuitRecord(0);
-		RedisClan::redisSetQuitClanTime($user->uid, $clan_id, $date);
+		//$user->addClanQuitRecord(0);
+		RedisClan::setQuitClanTime($user->uid, $clan_id, $date);
 		$clan->deleteMember($user);
 		return "Quit Clan successfully";
 	}
@@ -63,7 +63,7 @@ class ClanService{
 			throw new ClanException("不能同时加入两个工会，请先退出现在的工会",ClanException::ILLEGAL_OPERATION);
 		}
 		if(!Clan::isClanExist($clan_id)){
-			throw new CLanException("工会不存在",ClanException::CLAN_DO_NOT_EXIST);
+			throw new CLanException("Clan do not exit",ClanException::CLAN_DO_NOT_EXIST);
 		}else{
 			$clan = new Clan($clan_id);
 		}
@@ -75,40 +75,41 @@ class ClanService{
 		}
 		
 		/*******************Mysql 实现****************************/
-		$quit_result = $user->getClanQuitRecord();
-		if(count($quit_result)!=0){
-			for($i = 0;$i<count($quit_result);$i++){
-				$quit_time = strtotime($quit_result[$i]['quit_time']);
-				$timeDiff = (time()-$quit_time);
-				//同一公会
-				if($quit_result[$i]['clan_id'] == $clan_id){
-					if($timeDiff/3600 < 48){
-						$timeRequire = 48*3600-$timeDiff;
-						$d = floor($timeRequire/86400);
-						$h = floor($timeRequire%86400/3600);
-						$m = floor($timeRequire%86400%3600/60);
-						$s = floor($timeRequire%86400%3600%60);
-						throw new ClanException("无法在退出公会48小时内加入同个公会，再过".$d."天".$h."小时" .$m ."分钟".$s."秒后才可加入该公会",
-																								ClanException::ILLEGAL_OPERATION);
-					}else{
-						$user->deletClanQuitRecord($clan_id);
-					}
-				}else if($quit_result[$i]['kickout'] == 0){
-					if($timeDiff/3600 < 1){
-						$timeRequire = 3600-$timeDiff;
-						$m = floor($timeRequire/60);
-						$s = floor($timeRequire%60);
-						throw new ClanException("无法在退出公会1小时内加入任何公会，再过".$m ."分钟".$s."秒后才可选择加入公会",ClanException::ILLEGAL_OPERATION);
-					}
-				}else if($timeDiff/3600 >= 48){
-					$clan_id_i = $quit_result[$i]['clan_id'];
-					$user->deleteClanQuitRecord($clan_id_i);
-				}
-			}
-		}
-		
+// 		$quit_result = $user->getClanQuitRecord();
+// 		if(count($quit_result)!=0){
+// 			for($i = 0;$i<count($quit_result);$i++){
+// 				$quit_time = strtotime($quit_result[$i]['quit_time']);
+// 				$timeDiff = (time()-$quit_time);
+// 				//同一公会
+// 				if($quit_result[$i]['clan_id'] == $clan_id){
+// 					if($timeDiff/3600 < 48){
+// 						$timeRequire = 48*3600-$timeDiff;
+// 						$d = floor($timeRequire/86400);
+// 						$h = floor($timeRequire%86400/3600);
+// 						$m = floor($timeRequire%86400%3600/60);
+// 						$s = floor($timeRequire%86400%3600%60);
+// 						throw new ClanException("无法在退出公会48小时内加入同个公会，再过".$d."天".$h."小时" .$m ."分钟".$s."秒后才可加入该公会",
+// 																								ClanException::ILLEGAL_OPERATION);
+// 					}else{
+// 						$user->deletClanQuitRecord($clan_id);
+// 					}
+// 				}else if($quit_result[$i]['kickout'] == 0){
+// 					if($timeDiff/3600 < 1){
+// 						$timeRequire = 3600-$timeDiff;
+// 						$m = floor($timeRequire/60);
+// 						$s = floor($timeRequire%60);
+// 						throw new ClanException("无法在退出公会1小时内加入任何公会，再过".$m ."分钟".$s."秒后才可选择加入公会",ClanException::ILLEGAL_OPERATION);
+// 					}
+// 				}else if($timeDiff/3600 >= 48){
+// 					$clan_id_i = $quit_result[$i]['clan_id'];
+// 					$user->deleteClanQuitRecord($clan_id_i);
+// 				}
+// 			}
+// 		}
+// 		$user->addClanJoinRecord($clan_id);
+		/*********************************************************/
 		/*********************Redis实现***************************/
-		$timeRequire = RedisClan::redisGetQuitClanTime($user->uid, $clan_id);
+		$timeRequire = RedisClan::getQuitClanTime($user->uid, $clan_id);
 		if($timeRequire[0] > 0){
 			$d = floor($timeRequire[0]/86400);
 			$h = floor($timeRequire[0]%86400/3600);
@@ -117,15 +118,14 @@ class ClanService{
 			throw new ClanException("无法在退出公会48小时内加入同个公会，再过".$d."天".$h."小时" .$m ."分钟".$s."秒后才可加入该公会",
 																			ClanException::ILLEGAL_OPERATION);
 		}else if ($timeRequire[1] > 0){
-			$timeRequire = 3600-$timeDiff;
-			$m = floor($timeRequire/60);
-			$s = floor($timeRequire%60);
+			$m = floor($timeRequire[1]/60);
+			$s = floor($timeRequire[1]%60);
 			throw new ClanException("无法在退出公会1小时内加入任何公会，再过".$m ."分钟".$s."秒后才可选择加入公会",
 															ClanException::ILLEGAL_OPERATION);
 		}
-		
-		
-		$user->addClanJoinRecord($clan_id);
+		$date = date("Y:m:d h:i:s",time());
+		RedisClan::addJoinClanRequest($user->uid, $clan_id, $date);
+		/**************************************************************/
 		return("Application is successful, awaiting approval.");
 	}
 	
@@ -158,7 +158,8 @@ class ClanService{
 				$member = User::getInstance($parameter['member_id']);
 				$accept = $parameter['accept'];
 		}
-		if($user->getUserClanInfo('clan_id') == null){
+		$clan_id = $user->getUserClanInfo('clan_id');
+		if($clan_id == null){
 			throw new Exception("Request denied: user not in any clan");
 		}else{
 			$clan_job = $user->getUserClanInfo('clan_job');
@@ -166,8 +167,7 @@ class ClanService{
 		if(!($clan_job == CLAN_LEADER || $clan_job == CLAN_ELDER)){
 			throw new ClanException("Request denied: Only leader or elder can accept member",ClanException::PERMISSION_DENIED);
 		}
-		$clan_id = $user->getUserClanInfo("clan_id");
-		if(!($member->getClanJoinRecord($clan_id))){
+		if(RedisClan::getJoinClanRequest($member->uid, $clan_id) == null){
 			throw new Exception("No such request");
 		}
 		if(Clan::isClanExist($clan_id)){
@@ -186,9 +186,11 @@ class ClanService{
 				throw new ClanException("Request denied: Clan is full",ClanException::CLAN_IS_FULL);
 			}
 			$clan->addMember($member);
+			RedisClan::deleteJoinClanRequest($uid, ClanConstants::ALL_CLAN_ID);
 			return ("Accept successfully!");
 		}else{
-			$member->deleteClanJoinRecord($clan_id);
+			RedisClan::deleteJoinClanRequest($user->uid, $clan_id);
+			//$member->deleteClanJoinRecord($clan_id);
 			return("Refuse");
 		}
 	}

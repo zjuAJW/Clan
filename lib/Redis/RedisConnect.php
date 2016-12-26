@@ -1,5 +1,7 @@
-<?
-require __DIR__.'/../Predis/Autoloader.php';
+<?php
+require_once __DIR__."/../Predis/Autoloader.php";
+require_once __DIR__."/../../config/redis_config.php";
+
 Predis\Autoloader::register();
 
 function getRedisConnection($db = REDIS_DB_DEFAULT){ 

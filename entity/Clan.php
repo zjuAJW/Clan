@@ -31,8 +31,8 @@ class Clan{
 		$this->con->query($sql);
 		$sql = "update clan set member_num = member_num + 1 where id = '$this->clan_id'";
 		$this->con->query($sql);
-		$sql = "delete from clan_join_in_request where uid = '$uid'";
-		$this->con->query($sql);
+// 		$sql = "delete from clan_join_in_request where uid = '$uid'";
+// 		$this->con->query($sql);
 	}
 	
 	public function deleteMember($member){

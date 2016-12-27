@@ -1,13 +1,9 @@
 <?php
 class DispatchedSoldier extends Soldier{
 	public function __construct($id,$owner){
-		if(self::isDispatchedSoldierExist($id, $owner)){
 			$this->id = $id;
 			$this->owner = $owner;
 			$this->con = MysqlConnect::getInstance();
-		}else{
-			throw new Exception("No such soldier");
-		}
 	}
 	
 	public function __get($property){

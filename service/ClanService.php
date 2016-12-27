@@ -1,13 +1,12 @@
 <?php
-require_once dirname(dirname(__FILE__))."/entity/User.php";
-require_once dirname(dirname(__FILE__))."/entity/Member.php";
-require_once dirname(dirname(__FILE__))."/entity/Clan.php";
-require_once dirname(dirname(__FILE__))."/constant/CONSTANT.php";
-require_once dirname(dirname(__FILE__))."/constant/ClanException.php";
-require_once dirname(dirname(__FILE__))."/util/Util.php";
-require_once dirname(dirname(__FILE__))."/entity/DispatchedSoldier.php";
+require_once dirname(__DIR__)."/entity/User.php";
+require_once dirname(__DIR__)."/entity/Member.php";
+require_once dirname(__DIR__)."/entity/Clan.php";
+require_once dirname(__DIR__)."/constant/CONSTANT.php";
+require_once dirname(__DIR__)."/constant/ClanException.php";
+require_once dirname(__DIR__)."/util/Util.php";
+require_once dirname(__DIR__)."/entity/DispatchedSoldier.php";
 require_once dirname(__DIR__)."/lib/Redis/RedisClan.php";
-
 
 class ClanService{
 	public function createClan($parameter){
@@ -334,7 +333,9 @@ class ClanService{
 		if(!($member->getUserClanInfo("clan_id") == $clan_id)){
 			throw new Exception("Request denied: member not in clan");
 		}else{
-			$member->addClanQuitRecord(1);
+			$date = date("Y:m:d h:i:s",time());
+			//$member->addClanQuitRecord(1);
+			RedisClan::setKickOutMemberTime($member_uid, $clan_id, $date);
 			$clan->deleteMember($member);
 			return "Kick out successfully";
 		}
@@ -422,7 +423,11 @@ class ClanService{
 		if(Util::checkParameter($parameter, ["uid","soldier_id","owner"])){
 			$owner = User::getInstance($parameter["owner"]);
 			$user = User::getInstance($parameter['uid']);
-			$soldier = new DispatchedSoldier($parameter["soldier_id"], $parameter["owner"]);
+			if(DispatchedSoldier::isDispatchedSoldierExist($soldier_id, $parameter["owner"])){
+				$soldier = new DispatchedSoldier($parameter["soldier_id"], $parameter["owner"]);
+			}else{
+				throw new Exception("No such soldier");
+			}
 		}
 		if($user->uid == $owner->uid){
 			throw new Exception("Request denied: 不能雇佣自己的英雄");
@@ -448,7 +453,11 @@ class ClanService{
 	public function recallSoldier($parameter){
 		if(Util::checkParameter($parameter, ["uid","soldier_id"])){
 			$user = User::getInstance($parameter["uid"]);
-			$soldier = new DispatchedSoldier($parameter["soldier_id"],$parameter["uid"]);
+			if(DispatchedSoldier::isDispatchedSoldierExist($parameter["soldier_id"], $parameter["owner"])){
+				$soldier = new DispatchedSoldier($parameter["soldier_id"], $parameter["owner"]);
+			}else{
+				throw new Exception("No such soldier");
+			}
 		}
 		$time_dispatched = strtotime($soldier->time_dispatched);
 		$timeDiff = (time()-$time_dispatched);

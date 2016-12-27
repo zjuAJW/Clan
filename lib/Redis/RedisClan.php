@@ -32,6 +32,13 @@ class RedisClan{
 		return array($clan_quit,$quit);
 	}
 	
+	public static function setKickOutMemberTime($uid,$clan_id,$date){
+		$con = self::getConnection();
+		$key = $uid . ":" . self::QUIT_CLAN . ":" . $clan_id;
+		$con->set($key,$time);
+		$con->expire($key, self::TWO_DAYS);
+	}
+	
 	public static function addJoinClanRequest($uid, $clan_id,$date){
 		$con = self::getConnection();
 		$key = $uid . ":" . self::JOIN_CLAN_REQUEST . ":" . $clan_id;
